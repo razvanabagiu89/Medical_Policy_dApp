@@ -3,5 +3,4 @@ ganache-cli --db ./my_chain -p 8545 -d
 
 2. deploy contract if not deployed already -> scripts/deploy.py
 
-
 3. flask run
