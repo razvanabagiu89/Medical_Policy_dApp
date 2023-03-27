@@ -1,29 +1,29 @@
 <!doctype html>
 <html>
-  <head>
-    <title>Dashboard</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
-  </head>
-  <body>
-    <h1>Welcome to your dashboard!</h1>
-    <form method="post" action="{{ url_for('add_medical_record') }}">
-      <h2>Add Medical Record to Patient</h2>
-      <label for="patient_id">Patient ID:</label>
-      <input type="text" id="patient_id" name="patient_id"><br>
-      <label for="medical_record_id">Medical Record ID:</label>
-      <input type="text" id="medical_record_id" name="medical_record_id"><br>
-      <label for="cloud_link">Cloud Link:</label>
-      <input type="text" id="cloud_link" name="cloud_link"><br>
-      <input type="submit" value="Add Medical Record">
-    </form>
-    <form method="post" action="{{ url_for('get_patient_details') }}">
-      <h2>Get Patient Details</h2>
-      <label for="patient_id">Patient ID:</label>
-      <input type="text" id="patient_id" name="patient_id"><br>
-      <input type="submit" value="Get Patient Details">
-    </form>
-    <form action="{{ url_for('logout') }}" method="post">
-      <button type="submit">Logout</button>
-  </form>  
-  </body>
+
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+  <h1>Welcome to your dashboard!</h1>
+  <form action="{{ url_for('add_medical_record') }}" method="POST" enctype="multipart/form-data">
+    <label for="patientID">Patient ID:</label>
+    <input type="text" id="patientID" name="patientID"><br><br>
+    <label for="pdfFile">PDF file:</label>
+    <input type="file" id="pdfFile" name="pdfFile"><br><br>
+    <input type="submit" value="Submit">
+  </form>
+  <form method="post" action="{{ url_for('get_patient_details') }}">
+    <h2>Get Patient Details</h2>
+    <label for="patient_id">Patient ID:</label>
+    <input type="text" id="patient_id" name="patient_id"><br>
+    <input type="submit" value="Get Patient Details">
+  </form>
+  <form action="{{ url_for('logout') }}" method="post">
+    <button type="submit">Logout</button>
+  </form>
+</body>
+
 </html>

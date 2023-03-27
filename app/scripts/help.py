@@ -18,7 +18,6 @@ def get_contract(web3, contract_name, contract_address):
         )
         contract_interface = compiled_contract[f"<stdin>:{contract_name}"]
         abi = contract_interface["abi"]
-        bytecode = contract_interface["bin"]
-        contract = web3.eth.contract(abi=abi, bytecode=bytecode)
+        contract = web3.eth.contract(address=contract_address, abi=abi)
 
-    return contract
+        return contract

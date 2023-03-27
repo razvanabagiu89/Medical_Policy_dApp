@@ -2,50 +2,49 @@ pragma solidity ^0.8.0;
 
 contract PatientRegistryContract {
     struct Patient {
-        address patientAddress; // wallet
-        uint256 patientID; // hash
-        MedicalRecord[] medicalRecords; // all of patient's MRs
+        address patientAddress;
+        uint256 patientID; // hash or just a number? TBD
+        MedicalRecord[] medicalRecords; // all of patient's medical records
         uint256 medicalRecordsCount;
     }
 
     struct MedicalRecord {
         bytes32 medicalRecordHash;
-        string cloudLink;
+        // string cloudLink;
     }
 
     event newPatientEvent(address patientAddress, uint256 patientID);
-    event newMedicalRecordEvent(bytes32 medicalRecordHash, string cloudLink);
+    event newMedicalRecordEvent(bytes32 medicalRecordHash);
+    // , string cloudLink);
     event showPatientDetailsEvent(Patient patient);
 
     mapping(uint256 => Patient) allPatients;
-    uint256 public pacientCount;
+    uint256 public patientCount;
 
     constructor() {
-        pacientCount = 0;
+        patientCount = 0;
     }
 
-    // on register this will get called
     function newPatient(address _patientAddress) public {
+        // TBD
         // Verify that the _patientAddress is not already used
-        for (uint i = 0; i < pacientCount; i++) {
-            if (allPatients[i].patientAddress == _patientAddress) {
-                revert("Patient address is already used");
-            }
-        }
+        // for (uint i = 0; i < patientCount; i++) {
+        //     if (allPatients[i].patientAddress == _patientAddress) {
+        //         revert("Patient address is already used");
+        //     }
+        // }
 
-        uint256 patientID = pacientCount;
-        Patient storage p = allPatients[patientID];
+        Patient storage p = allPatients[patientCount];
         p.patientAddress = _patientAddress;
-        p.patientID = patientID;
+        p.patientID = patientCount;
         p.medicalRecordsCount = 0;
-        pacientCount++;
+        allPatients[patientCount] = p;
+        patientCount++;
 
-        emit newPatientEvent(_patientAddress, patientID);
+        emit newPatientEvent(p.patientAddress, p.patientID);
     }
 
-    function getPatientDetails(
-        uint256 _patientID
-    ) public {
+    function getPatientDetails(uint256 _patientID) public {
         // if patient does not exist, you cannot get patient details
         require(
             allPatients[_patientID].patientAddress != address(0),
@@ -56,9 +55,9 @@ contract PatientRegistryContract {
 
     function addMedicalRecordToPatient(
         uint256 patientID,
-        bytes32 _medicalRecordID,
-        string memory _cloudLink
-    ) public {
+        bytes32 _medicalRecordHash
+    ) public // string memory _cloudLink
+    {
         // if patient does not exist, you cannot add a medical record to it
         require(
             allPatients[patientID].patientAddress != address(0),
@@ -67,10 +66,12 @@ contract PatientRegistryContract {
 
         Patient storage p = allPatients[patientID];
         MedicalRecord memory mr = MedicalRecord({
-            medicalRecordHash: _medicalRecordID,
-            cloudLink: _cloudLink
+            medicalRecordHash: _medicalRecordHash
+            // cloudLink: _cloudLink
         });
         p.medicalRecords.push(mr);
-        emit newMedicalRecordEvent(_medicalRecordID, _cloudLink);
+        p.medicalRecordsCount++;
+        emit newMedicalRecordEvent(_medicalRecordHash);
+        //,  _cloudLink);
     }
 }
