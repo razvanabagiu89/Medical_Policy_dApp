@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 contract PatientRegistryContract {
@@ -10,12 +11,10 @@ contract PatientRegistryContract {
 
     struct MedicalRecord {
         bytes32 medicalRecordHash;
-        // string cloudLink;
     }
 
     event newPatientEvent(address patientAddress, uint256 patientID);
     event newMedicalRecordEvent(bytes32 medicalRecordHash);
-    // , string cloudLink);
     event showPatientDetailsEvent(Patient patient);
 
     mapping(uint256 => Patient) allPatients;
@@ -56,8 +55,7 @@ contract PatientRegistryContract {
     function addMedicalRecordToPatient(
         uint256 patientID,
         bytes32 _medicalRecordHash
-    ) public // string memory _cloudLink
-    {
+    ) public {
         // if patient does not exist, you cannot add a medical record to it
         require(
             allPatients[patientID].patientAddress != address(0),
@@ -67,11 +65,9 @@ contract PatientRegistryContract {
         Patient storage p = allPatients[patientID];
         MedicalRecord memory mr = MedicalRecord({
             medicalRecordHash: _medicalRecordHash
-            // cloudLink: _cloudLink
         });
         p.medicalRecords.push(mr);
         p.medicalRecordsCount++;
         emit newMedicalRecordEvent(_medicalRecordHash);
-        //,  _cloudLink);
     }
 }

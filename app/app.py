@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from functools import wraps
 from pymongo import MongoClient
-from web3 import Web3, contract
+from web3 import Web3
 import os
 from dotenv import load_dotenv
 from scripts.help import get_contract
@@ -29,7 +29,7 @@ private_key = os.getenv("PRIVATE_KEY")
 chain_id = int(os.getenv("CHAIN_ID"))
 
 # addresses - TBD with yml/json
-patient_registry_contract_address = "0xdFccc9C59c7361307d47c558ffA75840B32DbA29"
+patient_registry_contract_address = "0x6793E8E0E8ac22d71c65c2bf82e9B142dEf9eCDb"
 patient_registry_contract = get_contract(
     web3, "PatientRegistryContract", patient_registry_contract_address
 )
@@ -128,26 +128,25 @@ def logout():
 @app.route("/add_medical_record", methods=["POST"])
 @login_required
 def add_medical_record():
-    patient_id = int(request.form["patientID"])
+    username = session.get("username")
+    result = users.find_one({"username": username})
+    patient_id = result["patient_id"]
     file = request.files["pdfFile"]
 
-    premade_hash = str(patient_id) + "-" + "file"
+    premade_hash = str(patient_id) + "-" + file.filename
     file_hash = bytes.fromhex(sha256(premade_hash.encode("utf-8")).hexdigest())
 
-    # replace with your bucket name
     bucket_name = "bucket-test-rzw"
 
-    # replace with your IAM user's access key and secret key
     access_key = os.environ.get("ACCESS_KEY")
     secret_key = os.environ.get("SECRET_ACCESS_KEY")
 
-    # create an S3 client with the IAM user's credentials
     s3 = boto3.client(
         "s3", aws_access_key_id=access_key, aws_secret_access_key=secret_key
     )
-
-    # Upload the file to S3.
-    s3.put_object(Bucket=bucket_name, Key=file.filename, Body=file)
+    s3.put_object(
+        Bucket=bucket_name, Key=file.filename, Body=file, ServerSideEncryption="AES256"
+    )
 
     # update the patient's medical record on blockchain
     patient_registry_contract = get_contract(
@@ -174,7 +173,9 @@ def add_medical_record():
 @app.route("/get_patient_details", methods=["POST"])
 @login_required
 def get_patient_details():
-    patient_id = int(request.form["patient_id"])
+    username = session.get("username")
+    result = users.find_one({"username": username})
+    patient_id = result["patient_id"]
     patient_registry_contract = get_contract(
         web3, "PatientRegistryContract", patient_registry_contract_address
     )

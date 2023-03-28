@@ -5,6 +5,8 @@
   <meta charset="UTF-8">
   <title>Register User</title>
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
 </head>
 
 <body>
@@ -19,13 +21,34 @@
     <label for="type">Type:</label>
     <input type="text" id="type" name="type"><br>
 
-    <label for="address">Address:</label>
-    <input type="text" id="address" name="address"><br>
+    <!-- <label for="address">Address:</label>
+    <input type="text" id="address" name="address"><br> -->
 
     <input type="submit" value="Register">
   </form>
   <a href="{{ url_for('login') }}" class="btn btn-primary">Back to Login</a>
-  </form>
+
+  <h2>Connected with address: <span id="address"></span></h2>
+
+  <button onclick="connect()">Connect to MetaMask</button>
+  <script>
+    async function connect() {
+      console.log("connectWallet() called");
+      if (window.ethereum) {
+        try {
+          await window.ethereum.enable();
+          const web3 = new Web3(window.ethereum);
+          const accounts = await web3.eth.getAccounts();
+          const address = accounts[0];
+          document.getElementById("address").innerHTML = ` ${address}`;
+        } catch (error) {
+          console.error(error);
+        }
+      } else {
+        console.error("Metamask not detected");
+      }
+    }
+  </script>
 </body>
 
 </html>

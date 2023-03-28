@@ -9,16 +9,12 @@
 <body>
   <h1>Welcome to your dashboard!</h1>
   <form action="{{ url_for('add_medical_record') }}" method="POST" enctype="multipart/form-data">
-    <label for="patientID">Patient ID:</label>
-    <input type="text" id="patientID" name="patientID"><br><br>
     <label for="pdfFile">PDF file:</label>
     <input type="file" id="pdfFile" name="pdfFile"><br><br>
     <input type="submit" value="Submit">
   </form>
   <form method="post" action="{{ url_for('get_patient_details') }}">
     <h2>Get Patient Details</h2>
-    <label for="patient_id">Patient ID:</label>
-    <input type="text" id="patient_id" name="patient_id"><br>
     <input type="submit" value="Get Patient Details">
   </form>
   <form action="{{ url_for('logout') }}" method="post">
