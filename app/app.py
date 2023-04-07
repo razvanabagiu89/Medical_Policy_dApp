@@ -29,7 +29,7 @@ private_key = os.getenv("PRIVATE_KEY")
 chain_id = int(os.getenv("CHAIN_ID"))
 
 # addresses - TBD with yml/json
-patient_registry_contract_address = "0x6793E8E0E8ac22d71c65c2bf82e9B142dEf9eCDb"
+patient_registry_contract_address = "0xE8e43b5D61C43375aB7b651F1419F2a81C5E6615"
 patient_registry_contract = get_contract(
     web3, "PatientRegistryContract", patient_registry_contract_address
 )
@@ -45,7 +45,8 @@ def register():
     username = request.form["username"]
     password = request.form["password"]
     user_type = request.form["type"]
-    address = request.form["address"]
+    # address = request.form["address"]
+    address = "0x1dF62f291b2E969fB0849d99D9Ce41e2F137006e"
 
     patient_registry_contract = get_contract(
         web3, "PatientRegistryContract", patient_registry_contract_address

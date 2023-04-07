@@ -130,3 +130,8 @@ dmypy.json
 
 app/myenv/
 app/my_chain/
+app/node_modules/
+app/package.json 
+app/package-lock.json
+app/settings.json
+.vscode/

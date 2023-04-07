@@ -1,73 +1,105 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract PatientRegistryContract {
+import "contracts/@openzeppelin/Ownable.sol";
+
+contract PatientRegistryContract is Ownable {
     struct Patient {
-        address patientAddress;
-        uint256 patientID; // hash or just a number? TBD
-        MedicalRecord[] medicalRecords; // all of patient's medical records
-        uint256 medicalRecordsCount;
+        address[] patientAddresses;
+        uint256 patientID; // hash coming from app
+        bytes32[] medicalRecordsHashes;
     }
 
-    struct MedicalRecord {
-        bytes32 medicalRecordHash;
-    }
-
-    event newPatientEvent(address patientAddress, uint256 patientID);
-    event newMedicalRecordEvent(bytes32 medicalRecordHash);
-    event showPatientDetailsEvent(Patient patient);
-
-    mapping(uint256 => Patient) allPatients;
+    mapping(uint256 => Patient) public allPatients;
     uint256 public patientCount;
 
     constructor() {
         patientCount = 0;
     }
 
-    function newPatient(address _patientAddress) public {
-        // TBD
-        // Verify that the _patientAddress is not already used
-        // for (uint i = 0; i < patientCount; i++) {
-        //     if (allPatients[i].patientAddress == _patientAddress) {
-        //         revert("Patient address is already used");
-        //     }
-        // }
-
-        Patient storage p = allPatients[patientCount];
-        p.patientAddress = _patientAddress;
-        p.patientID = patientCount;
-        p.medicalRecordsCount = 0;
-        allPatients[patientCount] = p;
+    function newPatient(
+        address _patientAddress,
+        uint256 _patientID
+    ) external onlyOwner {
+        Patient storage p = allPatients[_patientID];
+        p.patientID = _patientID;
+        p.patientAddresses.push(_patientAddress);
+        p.medicalRecordsHashes = new bytes32[](0);
+        allPatients[_patientID] = p;
         patientCount++;
-
-        emit newPatientEvent(p.patientAddress, p.patientID);
     }
 
-    function getPatientDetails(uint256 _patientID) public {
-        // if patient does not exist, you cannot get patient details
-        require(
-            allPatients[_patientID].patientAddress != address(0),
-            "Invalid patient ID"
-        );
-        emit showPatientDetailsEvent(allPatients[_patientID]);
-    }
-
-    function addMedicalRecordToPatient(
-        uint256 patientID,
+    function addMedicalRecord(
+        uint256 _patientID,
         bytes32 _medicalRecordHash
-    ) public {
+    ) external {
         // if patient does not exist, you cannot add a medical record to it
         require(
-            allPatients[patientID].patientAddress != address(0),
+            allPatients[_patientID].patientAddresses.length > 0,
             "Invalid patient ID"
         );
 
-        Patient storage p = allPatients[patientID];
-        MedicalRecord memory mr = MedicalRecord({
-            medicalRecordHash: _medicalRecordHash
-        });
-        p.medicalRecords.push(mr);
-        p.medicalRecordsCount++;
-        emit newMedicalRecordEvent(_medicalRecordHash);
+        // Check if the msg.sender is in the patientAddresses array
+        bool senderIsAuthorized = false;
+        for (
+            uint i = 0;
+            i < allPatients[_patientID].patientAddresses.length;
+            i++
+        ) {
+            if (allPatients[_patientID].patientAddresses[i] == msg.sender) {
+                senderIsAuthorized = true;
+                break;
+            }
+        }
+        require(senderIsAuthorized, "Sender is not authorized");
+
+        Patient storage p = allPatients[_patientID];
+        p.medicalRecordsHashes.push(_medicalRecordHash);
+    }
+
+    function addWallet(uint256 _patientID, address _newAddress) external {
+        // Check if the patient exists
+        require(
+            allPatients[_patientID].patientAddresses.length > 0,
+            "Invalid patient ID"
+        );
+
+        // Check if the msg.sender is in the patientAddresses array
+        bool senderIsInAddresses = false;
+        for (
+            uint i = 0;
+            i < allPatients[_patientID].patientAddresses.length;
+            i++
+        ) {
+            if (allPatients[_patientID].patientAddresses[i] == msg.sender) {
+                senderIsInAddresses = true;
+                break;
+            }
+        }
+
+        require(senderIsInAddresses, "Sender is not authorized");
+
+        // Add the new address to the patientAddresses array
+        allPatients[_patientID].patientAddresses.push(_newAddress);
+    }
+
+    function getPatientAddresses(
+        uint256 _patientID
+    ) public view returns (address[] memory) {
+        require(
+            allPatients[_patientID].patientAddresses.length > 0,
+            "Invalid patient ID"
+        );
+        return allPatients[_patientID].patientAddresses;
+    }
+
+    function getPatientMedicalRecordsHashes(
+        uint256 _patientID
+    ) public view returns (bytes32[] memory) {
+        require(
+            allPatients[_patientID].patientAddresses.length > 0,
+            "Invalid patient ID"
+        );
+        return allPatients[_patientID].medicalRecordsHashes;
     }
 }

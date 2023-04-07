@@ -1,55 +1,99 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract AccessPolicyContract {
+import "contracts/@openzeppelin/Ownable.sol";
+
+contract AccessPolicyContract is Ownable {
     struct AccessPolicy {
-        mapping(uint256 => bool) institutionIDToAllowed;
+        mapping(bytes32 => bool) institutionIDToAllowed;
+        bytes32[] institutionIDs;
+        uint256 institutionCount;
     }
 
     struct PatientPolicies {
         address owner;
-        mapping(bytes32 => AccessPolicy) policies; // bytes32 = hash of medical record
+        mapping(bytes32 => AccessPolicy) policies; // (hash of medical record => AccessPolicy)
     }
 
-    // address of patient (owner above)
-    mapping(address => PatientPolicies) patientPolicies;
+    mapping(address => PatientPolicies) public allPatientPolicies;
 
-    function addPolicy(
-        address patient,
-        bytes32 medicalRecordHash,
-        uint256 institutionID
-    ) public {
+    function createPolicies(address patientAddress) external onlyOwner {
         require(
-            msg.sender == patientPolicies[patient].owner,
-            "Only patient can add policy."
+            allPatientPolicies[patientAddress].owner == address(0),
+            "Policies for this patient already exist"
         );
-        patientPolicies[patient]
-            .policies[medicalRecordHash]
-            .institutionIDToAllowed[institutionID] = true;
+        allPatientPolicies[patientAddress].owner = patientAddress;
     }
 
-    function removePolicy(
-        address patient,
+    function grantAccess(
+        address patientAddress,
         bytes32 medicalRecordHash,
-        uint256 institutionID
-    ) public {
+        bytes32 institutionID
+    ) external {
         require(
-            msg.sender == patientPolicies[patient].owner,
-            "Only patient can remove policy."
+            allPatientPolicies[patientAddress].owner == msg.sender,
+            "Sender is not the owner"
         );
-        patientPolicies[patient]
+        AccessPolicy storage policy = allPatientPolicies[patientAddress]
+            .policies[medicalRecordHash];
+
+        if (policy.institutionIDToAllowed[institutionID] == false) {
+            policy.institutionIDToAllowed[institutionID] = true;
+            policy.institutionIDs.push(institutionID);
+            policy.institutionCount++;
+        }
+    }
+
+    function revokeAccess(
+        address patientAddress,
+        bytes32 medicalRecordHash,
+        bytes32 institutionID
+    ) external {
+        require(
+            allPatientPolicies[patientAddress].owner == msg.sender,
+            "Sender is not the owner"
+        );
+        allPatientPolicies[patientAddress]
             .policies[medicalRecordHash]
             .institutionIDToAllowed[institutionID] = false;
     }
 
-    function isAllowed(
-        address patient,
-        bytes32 medicalRecordHash,
-        uint256 institutionID
-    ) public view returns (bool) {
-        return
-            patientPolicies[patient]
-                .policies[medicalRecordHash]
-                .institutionIDToAllowed[institutionID];
+    // Getter functions
+    function getPatientOwner(
+        address patient_address
+    ) public view returns (address) {
+        address owner = allPatientPolicies[patient_address].owner;
+        require(owner != address(0), "No owner found for this patient address");
+        return owner;
+    }
+
+    function getPatientPolicyAllowedByMedicalRecordHash(
+        address patientAddress,
+        bytes32 medicalRecordHash
+    ) public view returns (bytes32[] memory allowedInstitutionIDs) {
+        AccessPolicy storage policy = allPatientPolicies[patientAddress]
+            .policies[medicalRecordHash];
+        uint256 count = policy.institutionCount;
+        uint256 allowedCount = 0;
+
+        for (uint256 i = 0; i < count; i++) {
+            if (policy.institutionIDToAllowed[policy.institutionIDs[i]]) {
+                allowedCount++;
+            }
+        }
+
+        allowedInstitutionIDs = new bytes32[](allowedCount);
+
+        uint256 index = 0;
+        for (uint256 i = 0; i < count; i++) {
+            bytes32 institutionID = policy.institutionIDs[i];
+
+            if (policy.institutionIDToAllowed[institutionID]) {
+                allowedInstitutionIDs[index] = institutionID;
+                index++;
+            }
+        }
+
+        return (allowedInstitutionIDs);
     }
 }

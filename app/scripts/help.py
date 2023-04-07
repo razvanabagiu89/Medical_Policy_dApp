@@ -8,7 +8,6 @@ def get_contract(web3, contract_name, contract_address):
         print(f"Contract not found at address {contract_address}")
         exit()
     else:
-        print(f"Contract found at address {contract_address}")
         with open(f"contracts/{contract_name}.sol", "r") as file:
             source_code = file.read()
         compiled_contract = compile_source(
