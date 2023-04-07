@@ -1,122 +1,20 @@
 import pytest
-from web3 import Web3
 from web3.exceptions import ContractLogicError
-from scripts.deploy import deploy
-from scripts.help import get_contract
-import sys
-from pathlib import Path
-from yaml import safe_load
+from scripts.deploy import *
+from scripts.utils import *
 from random import *
-from hashlib import sha256
 
 
-#################################################### UTILS ####################################################
-
-
-def connect_to_web3_address(address):
-    web3 = Web3(Web3.HTTPProvider(address))
-    return web3
-
-
-def load_yaml_file(file):
-    with open(file, "r") as stream:
-        yaml_file = safe_load(stream)
-    return yaml_file
-
-
-def create_patient(
-    patient_registry_contract, patient_id, patient_address, web3_instance=None
-):
-    if web3_instance is None:
-        web3_instance = web3
-    tx_hash = patient_registry_contract.functions.newPatient(
-        patient_address, patient_id
-    ).transact({"from": admin_address})
-    tx_receipt = web3_instance.eth.wait_for_transaction_receipt(tx_hash)
-    return tx_receipt
-
-
-def get_patient_addresses(patient_registry_contract, patient_id):
-    patient_addresses = patient_registry_contract.functions.getPatientAddresses(
-        patient_id
-    ).call()
-    return patient_addresses
-
-
-def get_patient_medical_records_hashes(patient_registry_contract, patient_id):
-    medical_records_hashes = (
-        patient_registry_contract.functions.getPatientMedicalRecordsHashes(
-            patient_id
-        ).call()
-    )
-    return medical_records_hashes
-
-
-def get_patient_count(patient_registry_contract):
-    patient_count = patient_registry_contract.functions.patientCount().call()
-    return patient_count
-
-
-def compute_hash(filename):
-    file_hash = bytes.fromhex(sha256(filename.encode("utf-8")).hexdigest())
-    return file_hash
-
-
-def add_medical_record_to_patient(
-    patient_registry_contract,
-    patient_address,
-    patient_id,
-    file_hash,
-    web3_instance=None,
-):
-    if web3_instance is None:
-        web3_instance = web3
-    tx_hash = patient_registry_contract.functions.addMedicalRecord(
-        patient_id, file_hash
-    ).transact({"from": patient_address})
-    tx_receipt = web3_instance.eth.wait_for_transaction_receipt(tx_hash)
-    return tx_receipt
-
-
-def add_wallet_to_patient(
-    patient_registry_contract,
-    patient_address,
-    new_patient_address,
-    patient_id,
-    web3_instance=None,
-):
-    if web3_instance is None:
-        web3_instance = web3
-    tx_hash = patient_registry_contract.functions.addWallet(
-        patient_id, new_patient_address
-    ).transact({"from": patient_address})
-    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
-    return tx_receipt
-
-
-#################################################### UTILS ####################################################
-
-global web3
 web3 = connect_to_web3_address("http://127.0.0.1:8545")
 
-# test variables
-yaml_file = load_yaml_file("tests/test_config.yaml")
-admin_address = yaml_file["admin"]["address"]
-patient_1_address = yaml_file["patients"]["patient1"]["address"]
-patient_2_address = yaml_file["patients"]["patient2"]["address"]
-patient_3_address = yaml_file["patients"]["patient3"]["address"]
-institution_1_id = yaml_file["institutions"][0]
-institution_2_id = yaml_file["institutions"][1]
-institution_3_id = yaml_file["institutions"][2]
 
-
-def test_deploy_contract():
-    # act
+@pytest.fixture
+def patient_registry_contract():
     contract_address = deploy(web3, "PatientRegistryContract")
-    patient_registry_contract = get_contract(
-        web3, "PatientRegistryContract", contract_address
-    )
+    return get_contract(web3, "PatientRegistryContract", contract_address)
 
+
+def test_deploy_contract(patient_registry_contract):
     # assert
     patient_count = get_patient_count(patient_registry_contract)
     expected_patient_count = 0
@@ -124,16 +22,12 @@ def test_deploy_contract():
 
 
 # new patient can only be called by the admin address
-def test_new_patient_creation():
+def test_new_patient_creation(patient_registry_contract):
     # arrange
-    contract_address = deploy(web3, "PatientRegistryContract")
-    patient_registry_contract = get_contract(
-        web3, "PatientRegistryContract", contract_address
-    )
     patient_id = 15
 
     # act
-    create_patient(patient_registry_contract, patient_id, patient_1_address)
+    create_patient(patient_registry_contract, patient_id, patient_1_address, web3)
     patient_addresses = get_patient_addresses(patient_registry_contract, patient_id)
     medical_records_hashes = get_patient_medical_records_hashes(
         patient_registry_contract, patient_id
@@ -147,12 +41,8 @@ def test_new_patient_creation():
 
 
 # new patient is done only by admin address
-def test_new_patient_by_other_wallet():
+def test_new_patient_by_other_wallet(patient_registry_contract):
     # arrange
-    contract_address = deploy(web3, "PatientRegistryContract")
-    patient_registry_contract = get_contract(
-        web3, "PatientRegistryContract", contract_address
-    )
     patient_id = 15
 
     # act and assert
@@ -169,12 +59,8 @@ def test_new_patient_by_other_wallet():
         assert tx_receipt.status == 0, "Transaction should have reverted"
 
 
-def test_add_medicalrecord_to_non_existing_patient():
+def test_add_medicalrecord_to_non_existing_patient(patient_registry_contract):
     # arrange
-    contract_address = deploy(web3, "PatientRegistryContract")
-    patient_registry_contract = get_contract(
-        web3, "PatientRegistryContract", contract_address
-    )
     patient_id = 15
     filename = str(patient_id) + "-" + "demo.pdf"
     file_hash = compute_hash(filename)
@@ -185,25 +71,21 @@ def test_add_medicalrecord_to_non_existing_patient():
         match="execution reverted: VM Exception while processing transaction: revert Invalid patient ID",
     ):
         tx_receipt = add_medical_record_to_patient(
-            patient_registry_contract, patient_1_address, patient_id, file_hash
+            patient_registry_contract, patient_1_address, patient_id, file_hash, web3
         )
         assert tx_receipt.status == 0, "Transaction should have reverted"
 
 
-def test_add_medicalrecord():
+def test_add_medicalrecord(patient_registry_contract):
     # arrange
-    contract_address = deploy(web3, "PatientRegistryContract")
-    patient_registry_contract = get_contract(
-        web3, "PatientRegistryContract", contract_address
-    )
     patient_id = 15
-    create_patient(patient_registry_contract, patient_id, patient_1_address)
+    create_patient(patient_registry_contract, patient_id, patient_1_address, web3)
     filename = str(patient_id) + "-" + "demo.pdf"
     file_hash = compute_hash(filename)
 
     # act
     add_medical_record_to_patient(
-        patient_registry_contract, patient_1_address, patient_id, file_hash
+        patient_registry_contract, patient_1_address, patient_id, file_hash, web3
     )
 
     # assert
@@ -215,14 +97,10 @@ def test_add_medicalrecord():
     assert len(medical_records_hashes) == 1
 
 
-def test_add_medicalrecord_by_other_wallet():
+def test_add_medicalrecord_by_other_wallet(patient_registry_contract):
     # arrange
-    contract_address = deploy(web3, "PatientRegistryContract")
-    patient_registry_contract = get_contract(
-        web3, "PatientRegistryContract", contract_address
-    )
     patient_id = 15
-    create_patient(patient_registry_contract, patient_id, patient_1_address)
+    create_patient(patient_registry_contract, patient_id, patient_1_address, web3)
     filename = str(patient_id) + "-" + "demo.pdf"
     file_hash = compute_hash(filename)
 
@@ -232,17 +110,13 @@ def test_add_medicalrecord_by_other_wallet():
         match="execution reverted: VM Exception while processing transaction: revert Sender is not authorized",
     ):
         tx_receipt = add_medical_record_to_patient(
-            patient_registry_contract, patient_2_address, patient_id, file_hash
+            patient_registry_contract, patient_2_address, patient_id, file_hash, web3
         )  # notice from is patient2
         assert tx_receipt.status == 0, "Transaction should have reverted"
 
 
-def test_add_wallet_to_non_existing_patient():
+def test_add_wallet_to_non_existing_patient(patient_registry_contract):
     # arrange
-    contract_address = deploy(web3, "PatientRegistryContract")
-    patient_registry_contract = get_contract(
-        web3, "PatientRegistryContract", contract_address
-    )
     patient_id = 15
 
     # act and assert
@@ -251,24 +125,28 @@ def test_add_wallet_to_non_existing_patient():
         match="execution reverted: VM Exception while processing transaction: revert Invalid patient ID",
     ):
         tx_receipt = add_wallet_to_patient(
-            patient_registry_contract, patient_1_address, patient_2_address, patient_id
+            patient_registry_contract,
+            patient_1_address,
+            patient_2_address,
+            patient_id,
+            web3,
         )
         assert tx_receipt.status == 0, "Transaction should have reverted"
 
 
-def test_add_wallet():
+def test_add_wallet(patient_registry_contract):
     # arrange
-    contract_address = deploy(web3, "PatientRegistryContract")
-    patient_registry_contract = get_contract(
-        web3, "PatientRegistryContract", contract_address
-    )
     patient_id = 15
-    create_patient(patient_registry_contract, patient_id, patient_1_address)
+    create_patient(patient_registry_contract, patient_id, patient_1_address, web3)
     expected_new_wallet = patient_2_address
 
     # act
     add_wallet_to_patient(
-        patient_registry_contract, patient_1_address, patient_2_address, patient_id
+        patient_registry_contract,
+        patient_1_address,
+        patient_2_address,
+        patient_id,
+        web3,
     )
 
     # assert
@@ -278,14 +156,10 @@ def test_add_wallet():
     assert len(patient_addresses) == 2
 
 
-def test_add_wallet_by_other_wallet():
+def test_add_wallet_by_other_wallet(patient_registry_contract):
     # arrange
-    contract_address = deploy(web3, "PatientRegistryContract")
-    patient_registry_contract = get_contract(
-        web3, "PatientRegistryContract", contract_address
-    )
     patient_id = 15
-    create_patient(patient_registry_contract, patient_id, patient_1_address)
+    create_patient(patient_registry_contract, patient_id, patient_1_address, web3)
 
     # act and assert
     with pytest.raises(
@@ -293,17 +167,17 @@ def test_add_wallet_by_other_wallet():
         match="execution reverted: VM Exception while processing transaction: revert Sender is not authorized",
     ):
         tx_receipt = add_wallet_to_patient(
-            patient_registry_contract, patient_2_address, patient_2_address, patient_id
+            patient_registry_contract,
+            patient_2_address,
+            patient_2_address,
+            patient_id,
+            web3,
         )  # notice from is patient2
         assert tx_receipt.status == 0, "Transaction should have reverted"
 
 
-def test_get_patientaddresses_to_non_existing_patient():
+def test_get_patientaddresses_to_non_existing_patient(patient_registry_contract):
     # arrange
-    contract_address = deploy(web3, "PatientRegistryContract")
-    patient_registry_contract = get_contract(
-        web3, "PatientRegistryContract", contract_address
-    )
     patient_id = 15
 
     # act and assert
@@ -314,12 +188,8 @@ def test_get_patientaddresses_to_non_existing_patient():
         get_patient_addresses(patient_registry_contract, patient_id)
 
 
-def test_get_medicalrecordshashes_to_non_existing_patient():
+def test_get_medicalrecordshashes_to_non_existing_patient(patient_registry_contract):
     # arrange
-    contract_address = deploy(web3, "PatientRegistryContract")
-    patient_registry_contract = get_contract(
-        web3, "PatientRegistryContract", contract_address
-    )
     patient_id = 15
 
     # act and assert
@@ -331,14 +201,10 @@ def test_get_medicalrecordshashes_to_non_existing_patient():
 
 
 # create a patient with 1 wallet and 3 medical records
-def test_simple():
+def test_simple(patient_registry_contract):
     # arrange
-    contract_address = deploy(web3, "PatientRegistryContract")
-    patient_registry_contract = get_contract(
-        web3, "PatientRegistryContract", contract_address
-    )
     patient_id = 15
-    create_patient(patient_registry_contract, patient_id, patient_1_address)
+    create_patient(patient_registry_contract, patient_id, patient_1_address, web3)
 
     # act
     for i in range(3):
@@ -346,7 +212,7 @@ def test_simple():
         file_hash = compute_hash(filename)
 
         add_medical_record_to_patient(
-            patient_registry_contract, patient_1_address, patient_id, file_hash
+            patient_registry_contract, patient_1_address, patient_id, file_hash, web3
         )
 
     # assert
@@ -367,18 +233,18 @@ def test_simple():
 
 
 # create a patient with 2 wallets and add 2 medical records to each wallet
-def test_complex():
+def test_complex(patient_registry_contract):
     # arrange
-    contract_address = deploy(web3, "PatientRegistryContract")
-    patient_registry_contract = get_contract(
-        web3, "PatientRegistryContract", contract_address
-    )
     patient_id = 15
-    create_patient(patient_registry_contract, patient_id, patient_1_address)
+    create_patient(patient_registry_contract, patient_id, patient_1_address, web3)
 
     # act
     add_wallet_to_patient(
-        patient_registry_contract, patient_1_address, patient_2_address, patient_id
+        patient_registry_contract,
+        patient_1_address,
+        patient_2_address,
+        patient_id,
+        web3,
     )
 
     for i in range(2):
@@ -386,11 +252,11 @@ def test_complex():
         file_hash = compute_hash(filename)
 
         add_medical_record_to_patient(
-            patient_registry_contract, patient_1_address, patient_id, file_hash
+            patient_registry_contract, patient_1_address, patient_id, file_hash, web3
         )
 
         add_medical_record_to_patient(
-            patient_registry_contract, patient_2_address, patient_id, file_hash
+            patient_registry_contract, patient_2_address, patient_id, file_hash, web3
         )
 
     # assert

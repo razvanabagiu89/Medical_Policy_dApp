@@ -1,52 +1,22 @@
 import pytest
-from web3 import Web3
-from web3.exceptions import ContractLogicError
-from scripts.deploy import deploy
-from scripts.help import get_contract
-import sys
-from pathlib import Path
-from yaml import safe_load
+from scripts.deploy import *
+from scripts.utils import *
 from random import *
-from hashlib import sha256
 
-sys.path.append(str(Path(__file__).parent.parent.resolve()))
-
-web3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
-with open("tests/test_config.yaml", "r") as stream:
-    yaml_file = safe_load(stream)
+web3 = connect_to_web3_address("http://127.0.0.1:8545")
 
 
-# fixture to set up the contract
 @pytest.fixture
 def deploy_contracts():
-    contract_address_1 = deploy(web3, "AccessPolicyContract")
-    contract_address_2 = deploy(web3, "PatientRegistryContract")
-
-    return get_contract(web3, "AccessPolicyContract", contract_address_1), get_contract(
-        web3, "PatientRegistryContract", contract_address_2
+    patient_registry_contract_address = deploy(web3, "PatientRegistryContract")
+    access_policy_contract_address = deploy(web3, "AccessPolicyContract")
+    access_policy_contract = get_contract(
+        web3, "AccessPolicyContract", access_policy_contract_address
     )
-
-
-def string_to_bytes32(input_string: str) -> bytes:
-    return input_string.encode("utf-8").ljust(32, b"\0")
-
-
-def create_patient(patient_registry_contract, patient_id, patient_name):
-    tx_hash = patient_registry_contract.functions.newPatient(
-        yaml_file["patients"][patient_name]["address"], patient_id
-    ).transact({"from": yaml_file["admin"]["address"]})
-    web3.eth.wait_for_transaction_receipt(tx_hash)
-
-    patient_addresses = patient_registry_contract.functions.getPatientAddresses(
-        patient_id
-    ).call()
-    medical_records_hashes = (
-        patient_registry_contract.functions.getPatientMedicalRecordsHashes(
-            patient_id
-        ).call()
+    patient_registry_contract = get_contract(
+        web3, "PatientRegistryContract", patient_registry_contract_address
     )
-
-    return patient_addresses, patient_id, medical_records_hashes
+    return patient_registry_contract, access_policy_contract
 
 
 """
@@ -59,61 +29,52 @@ def create_patient(patient_registry_contract, patient_id, patient_name):
 
 def test_simple_1(deploy_contracts):
     # arrange
-    access_policy_contract, patient_registry_contract = deploy_contracts
+    patient_registry_contract, access_policy_contract = deploy_contracts
+    institution_id_bytes_1 = string_to_bytes32(institution_1_id)
+    institution_id_bytes_2 = string_to_bytes32(institution_2_id)
 
     # act
-    # add patient
+    # 1. add patient
     patient_id = 15
-    patient_addresses, patient_id, medical_records_hashes = create_patient(
-        patient_registry_contract, patient_id, "patient1"
-    )
-    patient_address = patient_addresses[0]
+    create_patient(patient_registry_contract, patient_id, patient_1_address, web3)
 
-    # add two medical records
+    # 2. add two medical records
     for i in range(2):
-        premade_hash = str(patient_id) + "-" + "demo" + str(i) + ".pdf"
-        file_hash = bytes.fromhex(sha256(premade_hash.encode("utf-8")).hexdigest())
-        tx_hash = patient_registry_contract.functions.addMedicalRecord(
-            patient_id, file_hash
-        ).transact({"from": yaml_file["patients"]["patient1"]["address"]})
-        web3.eth.wait_for_transaction_receipt(tx_hash)
+        filename = str(patient_id) + "-" + "demo" + str(i) + ".pdf"
+        file_hash = compute_hash(filename)
+        add_medical_record_to_patient(
+            patient_registry_contract, patient_1_address, patient_id, file_hash, web3
+        )
 
-    # create policies
-    admin_address = yaml_file["admin"]["address"]
-    tx_hash = access_policy_contract.functions.createPolicies(patient_address).transact(
-        {"from": admin_address}
-    )
-    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+    # 3. create policies
+    create_policies(access_policy_contract, patient_1_address, web3)
 
-    # fetch medical records from patient registry contract
-    medical_records_hashes = (
-        patient_registry_contract.functions.getPatientMedicalRecordsHashes(
-            patient_id
-        ).call()
+    # 4. fetch medical records from patient registry contract
+    medical_records_hashes = get_patient_medical_records_hashes(
+        patient_registry_contract, patient_id
     )
-    # grant access for two institutions on every medical record
+
+    # 5. grant access for two institutions on every medical record
     for i in range(2):
-        institution_id_bytes_1 = string_to_bytes32(yaml_file["institutions"][0])
-        institution_id_bytes_2 = string_to_bytes32(yaml_file["institutions"][1])
-        # grant to first institution
-        tx_hash = access_policy_contract.functions.grantAccess(
-            patient_address, medical_records_hashes[i], institution_id_bytes_1
-        ).transact({"from": patient_address})
-        tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
-        # grant to second institution
-        tx_hash = access_policy_contract.functions.grantAccess(
-            patient_address, medical_records_hashes[i], institution_id_bytes_2
-        ).transact({"from": patient_address})
-        tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+        grant_access(
+            access_policy_contract,
+            patient_1_address,
+            medical_records_hashes[i],
+            institution_id_bytes_1,
+            web3,
+        )
+        grant_access(
+            access_policy_contract,
+            patient_1_address,
+            medical_records_hashes[i],
+            institution_id_bytes_2,
+            web3,
+        )
 
     # assert
     for i in range(2):
-        institution_id_bytes_1 = string_to_bytes32(yaml_file["institutions"][0])
-        institution_id_bytes_2 = string_to_bytes32(yaml_file["institutions"][1])
-        institution_ids = (
-            access_policy_contract.functions.getPatientPolicyAllowedByMedicalRecordHash(
-                patient_address, medical_records_hashes[i]
-            ).call()
+        institution_ids = get_patient_policy_allowed_by_medical_record_hash(
+            access_policy_contract, patient_1_address, medical_records_hashes[i]
         )
         assert len(institution_ids) == 2
         assert institution_ids[0] == institution_id_bytes_1
@@ -130,73 +91,64 @@ def test_simple_1(deploy_contracts):
 
 def test_simple_2(deploy_contracts):
     # arrange
-    access_policy_contract, patient_registry_contract = deploy_contracts
+    patient_registry_contract, access_policy_contract = deploy_contracts
+    institution_id_bytes_1 = string_to_bytes32(institution_1_id)
+    institution_id_bytes_2 = string_to_bytes32(institution_2_id)
 
     # act
-    # add patient
+    # 1. add patient
     patient_id = 15
-    patient_addresses, patient_id, medical_records_hashes = create_patient(
-        patient_registry_contract, patient_id, "patient1"
-    )
-    patient_address = patient_addresses[0]
+    create_patient(patient_registry_contract, patient_id, patient_1_address, web3)
 
-    # add two medical records
+    # 2. add two medical records
     for i in range(2):
-        premade_hash = str(patient_id) + "-" + "demo" + str(i) + ".pdf"
-        file_hash = bytes.fromhex(sha256(premade_hash.encode("utf-8")).hexdigest())
-        tx_hash = patient_registry_contract.functions.addMedicalRecord(
-            patient_id, file_hash
-        ).transact({"from": yaml_file["patients"]["patient1"]["address"]})
-        web3.eth.wait_for_transaction_receipt(tx_hash)
+        filename = str(patient_id) + "-" + "demo" + str(i) + ".pdf"
+        file_hash = compute_hash(filename)
+        add_medical_record_to_patient(
+            patient_registry_contract, patient_1_address, patient_id, file_hash, web3
+        )
 
-    # create policies
-    admin_address = yaml_file["admin"]["address"]
-    tx_hash = access_policy_contract.functions.createPolicies(patient_address).transact(
-        {"from": admin_address}
-    )
-    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+    # 3. create policies
+    create_policies(access_policy_contract, patient_1_address, web3)
 
-    # fetch medical records from patient registry contract
-    medical_records_hashes = (
-        patient_registry_contract.functions.getPatientMedicalRecordsHashes(
-            patient_id
-        ).call()
+    # 4. fetch medical records from patient registry contract
+    medical_records_hashes = get_patient_medical_records_hashes(
+        patient_registry_contract, patient_id
     )
-    # grant access for two institutions on every medical record
+
+    # 5. grant access for two institutions on every medical record
     for i in range(2):
-        institution_id_bytes_1 = string_to_bytes32(yaml_file["institutions"][0])
-        institution_id_bytes_2 = string_to_bytes32(yaml_file["institutions"][1])
-        # grant to first institution
-        tx_hash = access_policy_contract.functions.grantAccess(
-            patient_address, medical_records_hashes[i], institution_id_bytes_1
-        ).transact({"from": patient_address})
-        tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
-        # grant to second institution
-        tx_hash = access_policy_contract.functions.grantAccess(
-            patient_address, medical_records_hashes[i], institution_id_bytes_2
-        ).transact({"from": patient_address})
-        tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+        grant_access(
+            access_policy_contract,
+            patient_1_address,
+            medical_records_hashes[i],
+            institution_id_bytes_1,
+            web3,
+        )
+        grant_access(
+            access_policy_contract,
+            patient_1_address,
+            medical_records_hashes[i],
+            institution_id_bytes_2,
+            web3,
+        )
 
-    # revoke access for first institution on the first medical record
-    # another method: fetch institution id bytes from the contract
-    institution_ids = (
-        access_policy_contract.functions.getPatientPolicyAllowedByMedicalRecordHash(
-            patient_address, medical_records_hashes[i]
-        ).call()
+    # 6. revoke access for first institution on the first medical record
+    institution_ids = get_patient_policy_allowed_by_medical_record_hash(
+        access_policy_contract, patient_1_address, medical_records_hashes[0]
     )
-    tx_hash = access_policy_contract.functions.revokeAccess(
-        patient_address, medical_records_hashes[0], institution_ids[0]
-    ).transact({"from": patient_address})
-    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+    revoke_access(
+        access_policy_contract,
+        patient_1_address,
+        medical_records_hashes[0],
+        institution_ids[0],
+        web3,
+    )
 
     # assert
     for i in range(2):
-        institution_id_bytes_1 = string_to_bytes32(yaml_file["institutions"][0])
-        institution_id_bytes_2 = string_to_bytes32(yaml_file["institutions"][1])
-        institution_ids = (
-            access_policy_contract.functions.getPatientPolicyAllowedByMedicalRecordHash(
-                patient_address, medical_records_hashes[i]
-            ).call()
+        institution_ids = get_patient_policy_allowed_by_medical_record_hash(
+            access_policy_contract, patient_1_address, medical_records_hashes[i]
         )
         # for first medical record, only second institution should be allowed
         if i == 0:
@@ -220,162 +172,101 @@ def test_simple_2(deploy_contracts):
 
 def test_simple_3(deploy_contracts):
     # arrange
-    access_policy_contract, patient_registry_contract = deploy_contracts
+    patient_registry_contract, access_policy_contract = deploy_contracts
 
     # act
-    # add patient
+    # 1. add patient
     patient_id = 15
-    patient_addresses, patient_id, medical_records_hashes = create_patient(
-        patient_registry_contract, patient_id, "patient1"
-    )
-    patient_address = patient_addresses[0]
+    create_patient(patient_registry_contract, patient_id, patient_1_address, web3)
 
-    # add one medical record
-    premade_hash = str(patient_id) + "-" + "demo.pdf"
-    file_hash = bytes.fromhex(sha256(premade_hash.encode("utf-8")).hexdigest())
-    tx_hash = patient_registry_contract.functions.addMedicalRecord(
-        patient_id, file_hash
-    ).transact({"from": yaml_file["patients"]["patient1"]["address"]})
-    web3.eth.wait_for_transaction_receipt(tx_hash)
-
-    # create policies
-    admin_address = yaml_file["admin"]["address"]
-    tx_hash = access_policy_contract.functions.createPolicies(patient_address).transact(
-        {"from": admin_address}
+    # 2. add one medical record
+    filename = str(patient_id) + "-" + "demo.pdf"
+    file_hash = compute_hash(filename)
+    add_medical_record_to_patient(
+        patient_registry_contract, patient_1_address, patient_id, file_hash, web3
     )
-    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
 
-    # fetch medical records from patient registry contract
-    medical_records_hashes = (
-        patient_registry_contract.functions.getPatientMedicalRecordsHashes(
-            patient_id
-        ).call()
+    # 3. create policies
+    create_policies(access_policy_contract, patient_1_address, web3)
+
+    # 4. fetch medical records from patient registry contract
+    medical_records_hashes = get_patient_medical_records_hashes(
+        patient_registry_contract, patient_id
     )
-    # grant access for three institutions on the medical record
+
+    # 5. grant access for three institutions on the medical record
     for i in range(3):
         institution_id_bytes = string_to_bytes32(yaml_file["institutions"][i])
-        tx_hash = access_policy_contract.functions.grantAccess(
-            patient_address, medical_records_hashes[0], institution_id_bytes
-        ).transact({"from": patient_address})
-        tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+        grant_access(
+            access_policy_contract,
+            patient_1_address,
+            medical_records_hashes[0],
+            institution_id_bytes,
+            web3,
+        )
 
-    # patient adds another wallet
-    new_patient_address = yaml_file["patients"]["patient2"]["address"]
-    tx_hash = patient_registry_contract.functions.addWallet(
-        patient_id, new_patient_address
-    ).transact({"from": patient_address})
-    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
-
-    # add another medical record on the 2nd address
-    premade_hash = str(patient_id) + "-" + "demo2.pdf"
-    file_hash = bytes.fromhex(sha256(premade_hash.encode("utf-8")).hexdigest())
-    tx_hash = patient_registry_contract.functions.addMedicalRecord(
-        patient_id, file_hash).transact({"from": new_patient_address})
-    web3.eth.wait_for_transaction_receipt(tx_hash)
-
-    # create policies for this new address
-    tx_hash = access_policy_contract.functions.createPolicies(new_patient_address).transact(
-        {"from": admin_address}
+    # 6. patient adds another wallet
+    add_wallet_to_patient(
+        patient_registry_contract,
+        patient_1_address,
+        patient_2_address,
+        patient_id,
+        web3,
     )
-    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
 
-    # fetch medical records from patient registry contract again
-    medical_records_hashes = (
-        patient_registry_contract.functions.getPatientMedicalRecordsHashes(
-            patient_id
-        ).call()
+    # 7. add another medical record on the 2nd address
+    filename = str(patient_id) + "-" + "demo2.pdf"
+    file_hash = compute_hash(filename)
+    add_medical_record_to_patient(
+        patient_registry_contract, patient_2_address, patient_id, file_hash, web3
     )
-    first_medical_records_hash = medical_records_hashes[0]
-    second_medical_records_hash = medical_records_hashes[1]
-    # grant access for two institutions on the medical record
+
+    # 8. create policies for this new address
+    create_policies(access_policy_contract, patient_2_address, web3)
+
+    # 9. fetch medical records from patient registry contract again
+    medical_records_hashes = get_patient_medical_records_hashes(
+        patient_registry_contract, patient_id
+    )
+
+    # 10. grant access for two institutions on the medical record
     for i in range(2):
         institution_id_bytes = string_to_bytes32(yaml_file["institutions"][i])
-        tx_hash = access_policy_contract.functions.grantAccess(
-            new_patient_address, second_medical_records_hash, institution_id_bytes
-        ).transact({"from": new_patient_address})
-        tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+        grant_access(
+            access_policy_contract,
+            patient_2_address,
+            medical_records_hashes[0],
+            institution_id_bytes,
+            web3,
+        )
 
     # assert
     # fetch medical records = first address (1) + second address (1) = 2
-    medical_records_hashes = patient_registry_contract.functions.getPatientMedicalRecordsHashes(
-            patient_id
-        ).call()
+    medical_records_hashes = get_patient_medical_records_hashes(
+        patient_registry_contract, patient_id
+    )
     assert len(medical_records_hashes) == 2
-    print(first_medical_records_hash)
-    print(second_medical_records_hash)
+
     # fetch addresses = first address (1) + second address (1) = 2
-    patient_addresses = patient_registry_contract.functions.getPatientAddresses(
-        patient_id
-    ).call()
+    patient_addresses = get_patient_addresses(patient_registry_contract, patient_id)
     assert len(patient_addresses) == 2
-    assert patient_addresses[0] == patient_address
-    assert patient_addresses[1] == new_patient_address
+    assert patient_addresses[0] == patient_1_address
+    assert patient_addresses[1] == patient_2_address
+
     # fetch policies for first address
-    institution_ids = access_policy_contract.functions.getPatientPolicyAllowedByMedicalRecordHash(
-            patient_address, first_medical_records_hash
-        ).call()
+    institution_ids = get_patient_policy_allowed_by_medical_record_hash(
+        access_policy_contract, patient_1_address, medical_records_hashes[0]
+    )
     assert len(institution_ids) == 3
     for i in range(3):
         institution_id_bytes = string_to_bytes32(yaml_file["institutions"][i])
         assert institution_ids[i] == institution_id_bytes
+
     # fetch policies for second address
-    institution_ids = access_policy_contract.functions.getPatientPolicyAllowedByMedicalRecordHash(
-            new_patient_address, second_medical_records_hash
-        ).call()
+    institution_ids = get_patient_policy_allowed_by_medical_record_hash(
+        access_policy_contract, patient_2_address, medical_records_hashes[0]
+    )
     assert len(institution_ids) == 2
     for i in range(2):
         institution_id_bytes = string_to_bytes32(yaml_file["institutions"][i])
         assert institution_ids[i] == institution_id_bytes
-
-
-"""
-- given test_simple_3
-- patient has only patient id
-- wants all info:
-    - addresses
-    - medical records
-    - policies
-"""
-
-def test_simple_4(deploy_contracts):
-    # arrange
-    access_policy_contract, patient_registry_contract = deploy_contracts
-
-    # act
-    patient_id = 15
-    test_simple_3(deploy_contracts)
-    # get all info
-    patient_addresses = patient_registry_contract.functions.getPatientAddresses(
-        patient_id
-    ).call()
-    print(patient_addresses) # 2
-    medical_records_hashes = patient_registry_contract.functions.getPatientMedicalRecordsHashes(
-        patient_id
-    ).call()
-    print(medical_records_hashes) # 2
-
-    # assert
-    assert len(patient_addresses) == 2   
-    assert len(medical_records_hashes) == 2
-
-    # fetch policies for first address
-    institution_ids = access_policy_contract.functions.getPatientPolicyAllowedByMedicalRecordHash(
-            patient_addresses[0], medical_records_hashes[0]
-        ).call()
-    print(institution_ids) # 3
-    assert len(institution_ids) == 3
-    for i in range(3):
-        institution_id_bytes = string_to_bytes32(yaml_file["institutions"][i])
-        assert institution_ids[i] == institution_id_bytes
-    # fetch policies for second address
-    institution_ids = access_policy_contract.functions.getPatientPolicyAllowedByMedicalRecordHash(
-            patient_addresses[1], medical_records_hashes[1]
-        ).call()
-    print(institution_ids) # 2
-    assert len(institution_ids) == 2
-    for i in range(2):
-        institution_id_bytes = string_to_bytes32(yaml_file["institutions"][i])
-        assert institution_ids[i] == institution_id_bytes
-
-    
-
