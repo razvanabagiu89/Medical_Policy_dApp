@@ -38,8 +38,4 @@ each wallet is unique in patient's wallet list
 each institution is uniquely identified by his CIF (input)
 
 #### todo:
-- create_policy_for_wallet() func in backend to create policy for his other wallets
-- show_policies()
-- grant()
-- revoke()
-- 
+- consistent tests 

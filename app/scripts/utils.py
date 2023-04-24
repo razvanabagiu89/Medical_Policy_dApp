@@ -1,4 +1,4 @@
-from web3 import Web3
+from web3 import Web3, exceptions
 from yaml import safe_load
 from random import *
 from hashlib import sha256
@@ -103,8 +103,10 @@ def add_medical_record_to_patient(
     tx_receipt = web3_instance.eth.wait_for_transaction_receipt(tx_hash)
     return tx_receipt
 
+
 class WalletAddressAlreadyExists(Exception):
     pass
+
 
 def add_wallet_to_patient(
     patient_registry_contract,
@@ -113,7 +115,9 @@ def add_wallet_to_patient(
     patient_id,
     web3_instance,
 ):
-    current_patient_addresses = get_patient_addresses(patient_registry_contract, patient_id)
+    current_patient_addresses = get_patient_addresses(
+        patient_registry_contract, patient_id
+    )
     if new_patient_address not in current_patient_addresses:
         tx_hash = patient_registry_contract.functions.addWallet(
             patient_id, new_patient_address
@@ -121,14 +125,20 @@ def add_wallet_to_patient(
         tx_receipt = web3_instance.eth.wait_for_transaction_receipt(tx_hash)
         return tx_receipt
     else:
-        raise WalletAddressAlreadyExists("The new wallet address already exists for this patient.")
+        raise WalletAddressAlreadyExists(
+            "The new wallet address already exists for this patient."
+        )
 
 
 ########################################## AccessPolicyContract ##########################################
 
 
-def string_to_bytes32(input_string: str) -> bytes:
+def string_to_bytes32(input_string: str):
     return input_string.encode("utf-8").ljust(32, b"\0")
+
+
+def hex_to_bytes32(input_string: str):
+    return Web3.to_bytes(hexstr=input_string).ljust(32, b"\0")
 
 
 def create_policies(access_policy_contract, patient_address, web3_instance):
@@ -184,8 +194,8 @@ def get_patient_owner(access_policy_contract, patient_address):
     ).call()
     return patient_owner
 
-def deploy(web3, contract_name):
 
+def deploy(web3, contract_name):
     # install_solc('0.8.0')
 
     with open(f"contracts/{contract_name}.sol", "r") as file:
@@ -203,7 +213,9 @@ def deploy(web3, contract_name):
     transaction = contract.constructor().build_transaction(
         {"chainId": chain_id, "from": admin_address, "nonce": nonce}
     )
-    signed_tx = web3.eth.account.sign_transaction(transaction, private_key=admin_private_key)
+    signed_tx = web3.eth.account.sign_transaction(
+        transaction, private_key=admin_private_key
+    )
     tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
     tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
     contract_address = tx_receipt.contractAddress

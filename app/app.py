@@ -6,6 +6,7 @@ import datetime
 
 app = Flask(__name__)
 app.secret_key = app_secret_key
+app.config["app.json.compact"] = False
 
 client = MongoClient(mongodb_host)
 db = client[db_name]
@@ -13,8 +14,8 @@ entities = db[entities]
 entities.create_index([("ID", ASCENDING)], unique=True)
 
 web3 = Web3(Web3.HTTPProvider(web3_host))
-if web3.is_connected():
-    print("Connected to ganache-cli")
+# if web3.is_connected():
+#     print("Connected to ganache-cli")
 
 patient_registry_contract = get_contract(
     web3, "PatientRegistryContract", patient_registry_contract_address
@@ -48,8 +49,18 @@ def add_patient():
                 }
             )
             # blockchain
-            create_patient(patient_registry_contract, patient_id, patient_address_converted, web3) # by patientID
-            create_policies(access_policy_contract, patient_address_converted, web3) # by address
+            try:
+                create_policies(
+                    access_policy_contract, patient_address_converted, web3
+                )  # by address
+            except exceptions.ContractLogicError:
+                return (
+                    jsonify({"status": "error", "message": "Policy already exists"}),
+                    400,
+                )
+            create_patient(
+                patient_registry_contract, patient_id, patient_address_converted, web3
+            )  # by patient_id
             inserted = True
             print("Patient inserted with ID:", patient_id)
             return jsonify({"status": "success", "patient_id": patient_id}), 201
@@ -99,7 +110,6 @@ def add_institution():
 
 @app.route("/api/patient/<patient_id>/wallet", methods=["POST"])
 def add_wallet(patient_id):
-
     patient_id = int(request.json["patient_id"])
     patient = entities.find_one({"ID": patient_id})
     if patient:
@@ -110,7 +120,7 @@ def add_wallet(patient_id):
         # db
         entities.update_one(
             {"ID": patient_id},
-            {"$addToSet": {"wallets": new_patient_address_converted}}
+            {"$addToSet": {"wallets": new_patient_address_converted}},
         )
         # blockchain
         try:
@@ -121,13 +131,22 @@ def add_wallet(patient_id):
                 patient_id,
                 web3,
             )
-            print("Wallet added to patient with ID:", patient_id)
+            create_policies(access_policy_contract, new_patient_address_converted, web3)
+            print("Wallet and policy added to patient with ID:", patient_id)
             return (
-                jsonify({"status": "success", "new_patient_address": new_patient_address_converted}),
+                jsonify(
+                    {
+                        "status": "success",
+                        "new_patient_address": new_patient_address_converted,
+                    }
+                ),
                 201,
             )
         except WalletAddressAlreadyExists:
-            return jsonify({"status": "error", "message": "Wallet already exists."}), 400
+            return (
+                jsonify({"status": "error", "message": "Wallet already exists."}),
+                400,
+            )
 
     else:
         print("Error: Patient not found.")
@@ -139,14 +158,12 @@ def get_patient_wallets(patient_id):
     blockchain_addresses = get_patient_addresses(
         patient_registry_contract, int(patient_id)
     )
-    print(blockchain_addresses)
 
     patient = entities.find_one({"ID": int(patient_id), "type": "patient"})
     if patient is None:
         return jsonify({"error": "Patient not found"}), 404
 
     db_addresses = patient.get("wallets", [])
-    print(db_addresses)
 
     # make sure blockchain and db is corellated
     if set(blockchain_addresses) == set(db_addresses):
@@ -168,7 +185,7 @@ def add_medical_record(patient_id):
         # db
         entities.update_one(
             {"ID": patient_id},
-            {"$addToSet": {"medical_records_hashes": medical_record_hash}}
+            {"$addToSet": {"medical_records_hashes": medical_record_hash}},
         )
         # blockchain
         add_medical_record_to_patient(
@@ -187,6 +204,103 @@ def add_medical_record(patient_id):
         )
     else:
         print("Error: Patient not found.")
+        return jsonify({"status": "error", "message": "Patient not found."}), 404
+
+
+@app.route("/api/patient/<int:patient_id>/all_policies", methods=["GET"])
+def get_all_policies_for_patient(patient_id):
+    patient = entities.find_one({"ID": patient_id, "type": "patient"})
+
+    if patient:
+        medical_record_policies = {}
+
+        # convert binary to hex strings
+        hex_medical_records_hashes = [
+            hash_data.hex() for hash_data in patient["medical_records_hashes"]
+        ]
+        for file_hash in hex_medical_records_hashes:
+            file_hash_policies = {}
+            for wallet in patient["wallets"]:
+                institution_ids = get_patient_policy_allowed_by_medical_record_hash(
+                    access_policy_contract,
+                    wallet,
+                    hex_to_bytes32(
+                        file_hash
+                    ),  # for solidity convert hex strings to bytes32
+                )
+                # convert bytes to string again
+                institution_ids_str = [
+                    Web3.to_text(institution_id_bytes).rstrip("\x00")
+                    for institution_id_bytes in institution_ids
+                ]
+                if len(institution_ids_str) > 0:
+                    file_hash_policies[wallet] = institution_ids_str
+            medical_record_policies[file_hash] = file_hash_policies
+
+        return (
+            jsonify(
+                {
+                    "status": "success",
+                    "medical_record_policies": medical_record_policies,
+                }
+            ),
+            200,
+        )
+    else:
+        return jsonify({"status": "error", "message": "Patient not found."}), 404
+
+
+@app.route("/api/patient/<patient_id>/grant_access", methods=["POST"])
+def grant_access_to_medical_record(patient_id):
+    patient_id = int(patient_id)
+    patient = entities.find_one({"ID": patient_id})
+
+    if patient:
+        patient_address = request.json["patient_address"]
+        patient_address_converted = Web3.to_checksum_address(patient_address)
+        file_hash = request.json["file_hash"]
+        institution_id = request.json["institution_id"]
+        institution_id_bytes = string_to_bytes32(institution_id)
+
+        try:
+            grant_access(
+                access_policy_contract,
+                patient_address_converted,
+                hex_to_bytes32(file_hash),
+                institution_id_bytes,
+                web3,
+            )
+            return jsonify({"status": "success", "message": "Access granted."}), 200
+        except Exception as e:
+            return jsonify({"status": "error", "message": str(e)}), 400
+    else:
+        return jsonify({"status": "error", "message": "Patient not found."}), 404
+
+
+@app.route("/api/patient/<patient_id>/revoke", methods=["POST"])
+def revoke_access_to_medical_record(patient_id):
+    patient_id = int(patient_id)
+    patient = entities.find_one({"ID": patient_id})
+
+    if patient:
+        patient_address = request.json["patient_address"]
+        patient_address_converted = Web3.to_checksum_address(patient_address)
+        file_hash = request.json["file_hash"]
+        institution_id = request.json["institution_id"]
+        institution_id_bytes = string_to_bytes32(institution_id)
+
+        try:
+            revoke_access(
+                access_policy_contract,
+                patient_address_converted,
+                hex_to_bytes32(file_hash),
+                institution_id_bytes,
+                web3,
+            )
+            return jsonify({"status": "success", "message": "Access revoked."}), 200
+        except Exception as e:
+            return jsonify({"status": "error", "message": str(e)}), 400
+    else:
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
