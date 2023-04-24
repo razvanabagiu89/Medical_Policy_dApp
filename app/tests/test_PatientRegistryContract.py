@@ -1,6 +1,5 @@
 import pytest
 from web3.exceptions import ContractLogicError
-from scripts.deploy import *
 from scripts.utils import *
 from random import *
 

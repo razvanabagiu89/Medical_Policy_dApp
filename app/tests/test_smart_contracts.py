@@ -1,5 +1,4 @@
 import pytest
-from scripts.deploy import *
 from scripts.utils import *
 from random import *
 
@@ -196,7 +195,7 @@ def test_simple_3(deploy_contracts):
 
     # 5. grant access for three institutions on the medical record
     for i in range(3):
-        institution_id_bytes = string_to_bytes32(yaml_file["institutions"][i])
+        institution_id_bytes = string_to_bytes32(test_file["institutions"][i])
         grant_access(
             access_policy_contract,
             patient_1_address,
@@ -231,7 +230,7 @@ def test_simple_3(deploy_contracts):
 
     # 10. grant access for two institutions on the medical record
     for i in range(2):
-        institution_id_bytes = string_to_bytes32(yaml_file["institutions"][i])
+        institution_id_bytes = string_to_bytes32(test_file["institutions"][i])
         grant_access(
             access_policy_contract,
             patient_2_address,
@@ -259,7 +258,7 @@ def test_simple_3(deploy_contracts):
     )
     assert len(institution_ids) == 3
     for i in range(3):
-        institution_id_bytes = string_to_bytes32(yaml_file["institutions"][i])
+        institution_id_bytes = string_to_bytes32(test_file["institutions"][i])
         assert institution_ids[i] == institution_id_bytes
 
     # fetch policies for second address
@@ -268,5 +267,5 @@ def test_simple_3(deploy_contracts):
     )
     assert len(institution_ids) == 2
     for i in range(2):
-        institution_id_bytes = string_to_bytes32(yaml_file["institutions"][i])
+        institution_id_bytes = string_to_bytes32(test_file["institutions"][i])
         assert institution_ids[i] == institution_id_bytes

@@ -1,0 +1,11 @@
+flask:
+  secret_key: demo
+mongodb:
+  db_name: app_db
+  entities_collection: entities
+  host: mongodb://localhost:27017/
+web3:
+  access_policy_contract_address: '0xD65d9Cb0fC54c95Ed021D74cB5164b5B30bB4B86'
+  chain_id: 1337
+  host: http://127.0.0.1:8545
+  patient_registry_contract_address: '0xA10f1c26d7D4BCB1a93F84652177D2E2b320378B'
