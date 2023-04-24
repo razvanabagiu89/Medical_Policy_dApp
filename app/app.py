@@ -14,9 +14,6 @@ entities = db[entities]
 entities.create_index([("ID", ASCENDING)], unique=True)
 
 web3 = Web3(Web3.HTTPProvider(web3_host))
-# if web3.is_connected():
-#     print("Connected to ganache-cli")
-
 patient_registry_contract = get_contract(
     web3, "PatientRegistryContract", patient_registry_contract_address
 )
@@ -34,7 +31,7 @@ def add_patient():
 
     inserted = False
     while not inserted:
-        patient_id = randint(0, 2)
+        patient_id = randint(0, 5)
         try:
             # db
             entities.insert_one(
@@ -62,8 +59,6 @@ def add_patient():
                 patient_registry_contract, patient_id, patient_address_converted, web3
             )  # by patient_id
             inserted = True
-            print("Patient inserted with ID:", patient_id)
-            return jsonify({"status": "success", "patient_id": patient_id}), 201
         except errors.DuplicateKeyError:
             print(
                 "Error: A patient with ID",
@@ -71,8 +66,9 @@ def add_patient():
                 "already exists. Retrying with a new ID...",
             )
 
+    print("Patient inserted with ID:", patient_id)
     return (
-        jsonify({"message": "Patient created successfully", "patient_id": patient_id}),
+        jsonify({"status": "success", "patient_id": patient_id}),
         201,
     )
 

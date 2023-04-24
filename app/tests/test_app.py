@@ -1,31 +1,42 @@
 import json
 import pytest
+import subprocess
+import importlib
 from app import app
 from flask_testing import TestCase
+
+
+@pytest.fixture(autouse=True)
+def reset_app_before_test():
+    subprocess.run(["./reset_app.sh"], check=True)
+    import app, scripts.utils
+
+    importlib.reload(scripts.utils)
+    importlib.reload(app)
+    yield
 
 
 class TestApp(TestCase):
     tag = "[TEST]"
     patient_id_demo = -1
-    file_hash_demo = ""
+    file_hash_demo_1 = ""
+    file_hash_demo_2 = ""
 
     def create_app(self):
         app.config["TESTING"] = True
         return app
 
-    @pytest.mark.run(order=1)
     def test_add_patient(self):
         data = {
             "username": "patient1",
             "password": "testpassword",
-            "patient_address": "0xACa94ef8bD5ffEE41947b4585a84BdA5a3d3DA6E",
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
         }
 
         response = self.client.post(
             "/api/patient", data=json.dumps(data), content_type="application/json"
         )
 
-        TestApp.patient_id_demo = int(response.json["patient_id"])
         assert response.status_code == 201
 
     def test_add_institution(self):
@@ -41,12 +52,24 @@ class TestApp(TestCase):
 
         assert response.status_code == 201
 
-    @pytest.mark.run(order=2)
     def test_add_wallet(self):
+        # create patient
+        data = {
+            "username": "patient1",
+            "password": "testpassword",
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+        }
+
+        response = self.client.post(
+            "/api/patient", data=json.dumps(data), content_type="application/json"
+        )
+        TestApp.patient_id_demo = int(response.json["patient_id"])
+
+        # add wallet
         data = {
             "patient_id": TestApp.patient_id_demo,
-            "patient_address": "0xACa94ef8bD5ffEE41947b4585a84BdA5a3d3DA6E",
-            "new_patient_address": "0x28a8746e75304c0780E011BEd21C72cD78cd535E",
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+            "new_patient_address": "0x22d491Bde2303f2f43325b2108D26f1eAbA1e32b",
         }
 
         response = self.client.post(
@@ -58,22 +81,44 @@ class TestApp(TestCase):
         assert response.status_code == 201
         assert response.json["new_patient_address"] == data["new_patient_address"]
 
-    @pytest.mark.run(order=3)
-    def test_get_patient_wallets(self):
+        # get patient wallets
         response = self.client.get(f"/api/patient/{TestApp.patient_id_demo}/wallet")
-
         assert response.status_code == 200
         data = json.loads(response.data)
         assert "wallets" in data
         assert isinstance(data["wallets"], list)
         assert len(data["wallets"]) > 0
 
-    @pytest.mark.run(order=4)
     def test_add_medical_records(self):
+        # create patient
+        data = {
+            "username": "patient1",
+            "password": "testpassword",
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+        }
+
+        response = self.client.post(
+            "/api/patient", data=json.dumps(data), content_type="application/json"
+        )
+        TestApp.patient_id_demo = int(response.json["patient_id"])
+
+        # add wallet
+        data = {
+            "patient_id": TestApp.patient_id_demo,
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+            "new_patient_address": "0x22d491Bde2303f2f43325b2108D26f1eAbA1e32b",
+        }
+
+        response = self.client.post(
+            f"/api/patient/{TestApp.patient_id_demo}/wallet",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+
         # 1
         data = {
             "patient_id": TestApp.patient_id_demo,
-            "patient_address": "0xACa94ef8bD5ffEE41947b4585a84BdA5a3d3DA6E",
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
             "filename": "testfile",
         }
         response = self.client.post(
@@ -83,11 +128,11 @@ class TestApp(TestCase):
         )
         assert response.status_code == 201
         print(TestApp.tag + response.json["medical_record_hash"])
-        TestApp.file_hash_demo = response.json["medical_record_hash"]
+        TestApp.file_hash_demo_1 = response.json["medical_record_hash"]
         # 2
         data = {
             "patient_id": TestApp.patient_id_demo,
-            "patient_address": "0x28a8746e75304c0780E011BEd21C72cD78cd535E",
+            "patient_address": "0x22d491Bde2303f2f43325b2108D26f1eAbA1e32b",
             "filename": "testfile",
         }
         response = self.client.post(
@@ -98,18 +143,56 @@ class TestApp(TestCase):
         assert response.status_code == 201
         print(TestApp.tag + response.json["medical_record_hash"])
 
-    @pytest.mark.run(order=6)
     def test_grant_access_to_medical_record(self):
-        patient_id = TestApp.patient_id_demo
-
+        # create patient
         data = {
-            "patient_address": "0xACa94ef8bD5ffEE41947b4585a84BdA5a3d3DA6E",
-            "file_hash": TestApp.file_hash_demo,
+            "username": "patient1",
+            "password": "testpassword",
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+        }
+
+        response = self.client.post(
+            "/api/patient", data=json.dumps(data), content_type="application/json"
+        )
+        TestApp.patient_id_demo = int(response.json["patient_id"])
+
+        # add wallet
+        data = {
+            "patient_id": TestApp.patient_id_demo,
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+            "new_patient_address": "0x22d491Bde2303f2f43325b2108D26f1eAbA1e32b",
+        }
+
+        response = self.client.post(
+            f"/api/patient/{TestApp.patient_id_demo}/wallet",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+
+        # create #1 MR
+        data = {
+            "patient_id": TestApp.patient_id_demo,
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+            "filename": "testfile",
+        }
+        response = self.client.post(
+            f"/api/patient/{TestApp.patient_id_demo}/medical_record",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+        assert response.status_code == 201
+        print(TestApp.tag + response.json["medical_record_hash"])
+        TestApp.file_hash_demo_1 = response.json["medical_record_hash"]
+
+        # grant access
+        data = {
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+            "file_hash": TestApp.file_hash_demo_1,
             "institution_id": "RM",
         }
 
         response = self.client.post(
-            f"/api/patient/{patient_id}/grant_access",
+            f"/api/patient/{TestApp.patient_id_demo}/grant_access",
             data=json.dumps(data),
             content_type="application/json",
         )
@@ -117,18 +200,55 @@ class TestApp(TestCase):
         assert response.status_code == 200
         assert response.json["status"] == "success"
 
-    @pytest.mark.run(order=7)
     def test_revoke_access_to_medical_record(self):
-        patient_id = TestApp.patient_id_demo
-
+        # create patient
         data = {
-            "patient_address": "0xACa94ef8bD5ffEE41947b4585a84BdA5a3d3DA6E",
-            "file_hash": TestApp.file_hash_demo,
+            "username": "patient1",
+            "password": "testpassword",
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+        }
+
+        response = self.client.post(
+            "/api/patient", data=json.dumps(data), content_type="application/json"
+        )
+        TestApp.patient_id_demo = int(response.json["patient_id"])
+
+        # add wallet
+        data = {
+            "patient_id": TestApp.patient_id_demo,
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+            "new_patient_address": "0x22d491Bde2303f2f43325b2108D26f1eAbA1e32b",
+        }
+
+        response = self.client.post(
+            f"/api/patient/{TestApp.patient_id_demo}/wallet",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+
+        # create #1 MR
+        data = {
+            "patient_id": TestApp.patient_id_demo,
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+            "filename": "testfile",
+        }
+        response = self.client.post(
+            f"/api/patient/{TestApp.patient_id_demo}/medical_record",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+        assert response.status_code == 201
+        print(TestApp.tag + response.json["medical_record_hash"])
+        TestApp.file_hash_demo_1 = response.json["medical_record_hash"]
+        # revoke access
+        data = {
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+            "file_hash": TestApp.file_hash_demo_1,
             "institution_id": "RM",
         }
 
         response = self.client.post(
-            f"/api/patient/{patient_id}/revoke",
+            f"/api/patient/{TestApp.patient_id_demo}/revoke",
             data=json.dumps(data),
             content_type="application/json",
         )
@@ -136,22 +256,113 @@ class TestApp(TestCase):
         assert response.status_code == 200
         assert response.json["status"] == "success"
 
-    @pytest.mark.run(order=8)
-    def test_get_all_policies_for_patient(self):
-        patient_id = TestApp.patient_id_demo
-
-        """ setup
+    def test_simple_1(self):
+        """setup
         1. patient creation
-        2. additional wallet 
-        3. add MR per wallet 
+        2. additional wallet
+        3. add MR per wallet
         4. add diff policies
         4. fetch
         """
-        response = self.client.get(
-            f"/api/patient/{patient_id}/all_policies", content_type="application/json"
-        )
-        assert response.status_code == 200
+        # create patient
+        data = {
+            "username": "patient1",
+            "password": "testpassword",
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+        }
 
+        response = self.client.post(
+            "/api/patient", data=json.dumps(data), content_type="application/json"
+        )
+        TestApp.patient_id_demo = int(response.json["patient_id"])
+
+        # add wallet
+        data = {
+            "patient_id": TestApp.patient_id_demo,
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+            "new_patient_address": "0x22d491Bde2303f2f43325b2108D26f1eAbA1e32b",
+        }
+
+        response = self.client.post(
+            f"/api/patient/{TestApp.patient_id_demo}/wallet",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+
+        # create #1 MR
+        data = {
+            "patient_id": TestApp.patient_id_demo,
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+            "filename": "testfile",
+        }
+        response = self.client.post(
+            f"/api/patient/{TestApp.patient_id_demo}/medical_record",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+        assert response.status_code == 201
+        print(TestApp.tag + response.json["medical_record_hash"])
+        TestApp.file_hash_demo_1 = response.json["medical_record_hash"]
+
+        # create #2 MR
+        data = {
+            "patient_id": TestApp.patient_id_demo,
+            "patient_address": "0x22d491Bde2303f2f43325b2108D26f1eAbA1e32b",
+            "filename": "testfile",
+        }
+        response = self.client.post(
+            f"/api/patient/{TestApp.patient_id_demo}/medical_record",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+        assert response.status_code == 201
+        print(TestApp.tag + response.json["medical_record_hash"])
+        TestApp.file_hash_demo_2 = response.json["medical_record_hash"]
+
+        # #1 MR grant access
+        data = {
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+            "file_hash": TestApp.file_hash_demo_1,
+            "institution_id": "RM",
+        }
+
+        response = self.client.post(
+            f"/api/patient/{TestApp.patient_id_demo}/grant_access",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+
+        # #2 MR grant access
+        data = {
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+            "file_hash": TestApp.file_hash_demo_2,
+            "institution_id": "RM",
+        }
+
+        response = self.client.post(
+            f"/api/patient/{TestApp.patient_id_demo}/grant_access",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+
+        # #1 MR revoke access
+        data = {
+            "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
+            "file_hash": TestApp.file_hash_demo_1,
+            "institution_id": "RM",
+        }
+
+        response = self.client.post(
+            f"/api/patient/{TestApp.patient_id_demo}/revoke",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+
+        # get all policies
+        response = self.client.get(
+            f"/api/patient/{TestApp.patient_id_demo}/all_policies",
+            content_type="application/json",
+        )
         data = response.json
         print(TestApp.tag + json.dumps(data["medical_record_policies"], indent=4))
         assert data["status"] == "success"
