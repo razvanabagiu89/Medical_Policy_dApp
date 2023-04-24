@@ -3,8 +3,11 @@
 
 0. source "/mnt/c/Users/Lenovo Legion Y530/Desktop/Medical_Policy_dApp/app/myenv/bin/activate"
 
+0.1
+npm install ganache
+
 1. start local blockchain
-ganache-cli --db ./my_chain -p 8545 -d
+ganache --db ./my_chain -p 8545 -d
 
 2. start docker with mongo-db
 sudo service docker start
