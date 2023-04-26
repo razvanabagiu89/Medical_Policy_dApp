@@ -19,6 +19,7 @@ def reset_app_before_test():
 class TestApp(TestCase):
     tag = "[TEST]"
     patient_id_demo = -1
+    doctor_id_demo = ""
     file_hash_demo_1 = ""
     file_hash_demo_2 = ""
 
@@ -43,7 +44,7 @@ class TestApp(TestCase):
         data = {
             "username": "institution1",
             "password": "testpassword",
-            "CIF": 99,
+            "CIF": "RM",
         }
 
         response = self.client.post(
@@ -51,6 +52,35 @@ class TestApp(TestCase):
         )
 
         assert response.status_code == 201
+
+    def test_add_doctor(self):
+        # add institution
+        CIF_demo = "RM"
+        data = {
+            "username": "institution1",
+            "password": "testpassword",
+            "CIF": CIF_demo,
+        }
+
+        response = self.client.post(
+            "/api/institution", data=json.dumps(data), content_type="application/json"
+        )
+        # add doc
+        data = {
+            "username": "doc_test",
+            "password": "password123",
+            "full_name": "Dr. Test",
+        }
+
+        response = self.client.post(
+            f"/api/{CIF_demo}/doctor",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 201
+        assert response.json["status"] == "success"
+        print(TestApp.tag + response.json["doctor_id"])
 
     def test_add_wallet(self):
         # create patient
@@ -67,7 +97,6 @@ class TestApp(TestCase):
 
         # add wallet
         data = {
-            "patient_id": TestApp.patient_id_demo,
             "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
             "new_patient_address": "0x22d491Bde2303f2f43325b2108D26f1eAbA1e32b",
         }
@@ -104,7 +133,6 @@ class TestApp(TestCase):
 
         # add wallet
         data = {
-            "patient_id": TestApp.patient_id_demo,
             "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
             "new_patient_address": "0x22d491Bde2303f2f43325b2108D26f1eAbA1e32b",
         }
@@ -156,9 +184,32 @@ class TestApp(TestCase):
         )
         TestApp.patient_id_demo = int(response.json["patient_id"])
 
+        # add institution
+        CIF_demo = "RM"
+        data = {
+            "username": "institution1",
+            "password": "testpassword",
+            "CIF": CIF_demo,
+        }
+
+        response = self.client.post(
+            "/api/institution", data=json.dumps(data), content_type="application/json"
+        )
+        # add doc
+        data = {
+            "username": "doc_test",
+            "password": "password123",
+            "full_name": "Dr. Test",
+        }
+
+        response = self.client.post(
+            f"/api/{CIF_demo}/doctor",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+        TestApp.doctor_id_demo = response.json["doctor_id"]
         # add wallet
         data = {
-            "patient_id": TestApp.patient_id_demo,
             "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
             "new_patient_address": "0x22d491Bde2303f2f43325b2108D26f1eAbA1e32b",
         }
@@ -188,7 +239,7 @@ class TestApp(TestCase):
         data = {
             "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
             "file_hash": TestApp.file_hash_demo_1,
-            "institution_id": "RM",
+            "doctor_id": TestApp.doctor_id_demo,
         }
 
         response = self.client.post(
@@ -207,15 +258,35 @@ class TestApp(TestCase):
             "password": "testpassword",
             "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
         }
-
         response = self.client.post(
             "/api/patient", data=json.dumps(data), content_type="application/json"
         )
         TestApp.patient_id_demo = int(response.json["patient_id"])
+        # add institution
+        CIF_demo = "RM"
+        data = {
+            "username": "institution1",
+            "password": "testpassword",
+            "CIF": CIF_demo,
+        }
+        response = self.client.post(
+            "/api/institution", data=json.dumps(data), content_type="application/json"
+        )
+        # add doc
+        data = {
+            "username": "doc_test",
+            "password": "password123",
+            "full_name": "Dr. Test",
+        }
 
+        response = self.client.post(
+            f"/api/{CIF_demo}/doctor",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+        TestApp.doctor_id_demo = response.json["doctor_id"]
         # add wallet
         data = {
-            "patient_id": TestApp.patient_id_demo,
             "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
             "new_patient_address": "0x22d491Bde2303f2f43325b2108D26f1eAbA1e32b",
         }
@@ -244,7 +315,7 @@ class TestApp(TestCase):
         data = {
             "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
             "file_hash": TestApp.file_hash_demo_1,
-            "institution_id": "RM",
+            "doctor_id": TestApp.doctor_id_demo,
         }
 
         response = self.client.post(
@@ -278,7 +349,6 @@ class TestApp(TestCase):
 
         # add wallet
         data = {
-            "patient_id": TestApp.patient_id_demo,
             "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
             "new_patient_address": "0x22d491Bde2303f2f43325b2108D26f1eAbA1e32b",
         }
@@ -319,11 +389,36 @@ class TestApp(TestCase):
         print(TestApp.tag + response.json["medical_record_hash"])
         TestApp.file_hash_demo_2 = response.json["medical_record_hash"]
 
+        # add institution
+        CIF_demo = "RM"
+        data = {
+            "username": "institution1",
+            "password": "testpassword",
+            "CIF": CIF_demo,
+        }
+
+        response = self.client.post(
+            "/api/institution", data=json.dumps(data), content_type="application/json"
+        )
+        # add doc
+        data = {
+            "username": "doc_test",
+            "password": "password123",
+            "full_name": "Dr. Test",
+        }
+
+        response = self.client.post(
+            f"/api/{CIF_demo}/doctor",
+            data=json.dumps(data),
+            content_type="application/json",
+        )
+        TestApp.doctor_id_demo = response.json["doctor_id"]
+
         # #1 MR grant access
         data = {
             "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
             "file_hash": TestApp.file_hash_demo_1,
-            "institution_id": "RM",
+            "doctor_id": TestApp.doctor_id_demo,
         }
 
         response = self.client.post(
@@ -336,7 +431,7 @@ class TestApp(TestCase):
         data = {
             "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
             "file_hash": TestApp.file_hash_demo_2,
-            "institution_id": "RM",
+            "doctor_id": TestApp.doctor_id_demo,
         }
 
         response = self.client.post(
@@ -349,7 +444,7 @@ class TestApp(TestCase):
         data = {
             "patient_address": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0",
             "file_hash": TestApp.file_hash_demo_1,
-            "institution_id": "RM",
+            "doctor_id": TestApp.doctor_id_demo,
         }
 
         response = self.client.post(

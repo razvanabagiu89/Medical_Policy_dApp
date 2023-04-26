@@ -41,4 +41,25 @@ each wallet is unique in patient's wallet list
 each institution is uniquely identified by his CIF (input)
 
 #### todo:
-- consistent tests 
+- involve S3 for MR:
+  - doctor entry in the db
+  - patient grants access to doctor based on his ID (should be random - later)
+  - doctor access patient's MR from his access_to list and sends request to backend which will check
+with the blockchain if the patient has granted access to the doctor
+  - if yes, the backend will send the MR to the doctor streamlined as PDF in flutter
+  - if not, the backend will send a message to the doctor that he has no access to the MR
+
+- each doctor will be linked to an institution
+- the institution will have an admin account which will be able to add doctors to the institution (later)
+- Ministry of Health will do the same and add institutions (later)
+- start of FE (soon)
+
+minor:
+- if db fails dont move to blockchain steps and reverse too
+- institution_id replaced by doctor_id
+- review all variables and functions names to be consistent across:
+    - db
+    - blockchain
+    - backend
+    - testing
+    - frontend

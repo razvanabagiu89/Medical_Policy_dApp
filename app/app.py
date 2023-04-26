@@ -104,9 +104,52 @@ def add_institution():
         )
 
 
+@app.route("/api/<institution_CIF>/doctor", methods=["POST"])
+def add_doctor(institution_CIF):
+    doctor_username = request.json["username"]
+    doctor_password = request.json["password"]
+    doctor_full_name = request.json["full_name"]
+    doctor_id = institution_CIF + str(
+        randint(0, 5)
+    )  # TODO check with bytes32 compatible
+
+    try:
+        institution = entities.find_one({"ID": institution_CIF, "type": "institution"})
+        if institution is None:
+            raise ValueError("Institution not found")
+
+        entities.insert_one(
+            {
+                "username": doctor_username,
+                "password": doctor_password,
+                "full_name": doctor_full_name,
+                "ID": doctor_id,
+                "type": "doctor",
+                "belongs_to": institution_CIF,
+                "access_to": [],
+            }
+        )
+        print("Doctor inserted with ID:", doctor_id)
+        return jsonify({"status": "success", "doctor_id": doctor_id}), 201
+    except errors.DuplicateKeyError:
+        print("Error: A doctor with this ID already exists.")
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "message": "A doctor with this ID already exists.",
+                }
+            ),
+            400,
+        )
+    except ValueError as e:
+        print("Error:", str(e))
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
 @app.route("/api/patient/<patient_id>/wallet", methods=["POST"])
 def add_wallet(patient_id):
-    patient_id = int(request.json["patient_id"])
+    patient_id = int(patient_id)
     patient = entities.find_one({"ID": patient_id})
     if patient:
         patient_address = request.json["patient_address"]
@@ -217,7 +260,7 @@ def get_all_policies_for_patient(patient_id):
         for file_hash in hex_medical_records_hashes:
             file_hash_policies = {}
             for wallet in patient["wallets"]:
-                institution_ids = get_patient_policy_allowed_by_medical_record_hash(
+                doctor_ids = get_patient_policy_allowed_by_medical_record_hash(
                     access_policy_contract,
                     wallet,
                     hex_to_bytes32(
@@ -225,12 +268,12 @@ def get_all_policies_for_patient(patient_id):
                     ),  # for solidity convert hex strings to bytes32
                 )
                 # convert bytes to string again
-                institution_ids_str = [
-                    Web3.to_text(institution_id_bytes).rstrip("\x00")
-                    for institution_id_bytes in institution_ids
+                doctor_ids_str = [
+                    Web3.to_text(doctor_id_bytes).rstrip("\x00")
+                    for doctor_id_bytes in doctor_ids
                 ]
-                if len(institution_ids_str) > 0:
-                    file_hash_policies[wallet] = institution_ids_str
+                if len(doctor_ids_str) > 0:
+                    file_hash_policies[wallet] = doctor_ids_str
             medical_record_policies[file_hash] = file_hash_policies
 
         return (
@@ -248,6 +291,8 @@ def get_all_policies_for_patient(patient_id):
 
 @app.route("/api/patient/<patient_id>/grant_access", methods=["POST"])
 def grant_access_to_medical_record(patient_id):
+    # TODO: go to doctor and put the MR hash in his access_to
+    # TODO: same for revoke
     patient_id = int(patient_id)
     patient = entities.find_one({"ID": patient_id})
 
@@ -255,15 +300,25 @@ def grant_access_to_medical_record(patient_id):
         patient_address = request.json["patient_address"]
         patient_address_converted = Web3.to_checksum_address(patient_address)
         file_hash = request.json["file_hash"]
-        institution_id = request.json["institution_id"]
-        institution_id_bytes = string_to_bytes32(institution_id)
+        doctor_id = request.json["doctor_id"]
+        doctor_id_bytes = string_to_bytes32(doctor_id)
 
         try:
+            # db
+            doctor = entities.find_one({"ID": doctor_id, "type": "doctor"})
+            if doctor:
+                entities.update_one(
+                    {"ID": doctor_id, "type": "doctor"},
+                    {"$addToSet": {"access_to": file_hash}},
+                )
+            else:
+                return jsonify({"status": "error", "message": "Doctor not found."}), 404
+            # blockchain
             grant_access(
                 access_policy_contract,
                 patient_address_converted,
                 hex_to_bytes32(file_hash),
-                institution_id_bytes,
+                doctor_id_bytes,
                 web3,
             )
             return jsonify({"status": "success", "message": "Access granted."}), 200
@@ -282,15 +337,25 @@ def revoke_access_to_medical_record(patient_id):
         patient_address = request.json["patient_address"]
         patient_address_converted = Web3.to_checksum_address(patient_address)
         file_hash = request.json["file_hash"]
-        institution_id = request.json["institution_id"]
-        institution_id_bytes = string_to_bytes32(institution_id)
+        doctor_id = request.json["doctor_id"]
+        doctor_id_bytes = string_to_bytes32(doctor_id)
 
         try:
+            # db
+            doctor = entities.find_one({"ID": doctor_id, "type": "doctor"})
+            if doctor:
+                entities.update_one(
+                    {"ID": doctor_id, "type": "doctor"},
+                    {"$pull": {"access_to": file_hash}},
+                )
+            else:
+                return jsonify({"status": "error", "message": "Doctor not found."}), 404
+            # blockchain
             revoke_access(
                 access_policy_contract,
                 patient_address_converted,
                 hex_to_bytes32(file_hash),
-                institution_id_bytes,
+                doctor_id_bytes,
                 web3,
             )
             return jsonify({"status": "success", "message": "Access revoked."}), 200
