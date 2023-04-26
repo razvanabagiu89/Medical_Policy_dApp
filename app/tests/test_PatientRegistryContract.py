@@ -120,8 +120,8 @@ def test_add_wallet_to_non_existing_patient(patient_registry_contract):
 
     # act and assert
     with pytest.raises(
-        ContractLogicError,
-        match="execution reverted: VM Exception while processing transaction: revert Invalid patient ID",
+        ValueError,
+        match="VM Exception while processing transaction: revert Invalid patient ID",
     ):
         tx_receipt = add_wallet_to_patient(
             patient_registry_contract,

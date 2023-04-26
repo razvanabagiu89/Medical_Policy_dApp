@@ -49,14 +49,12 @@ with the blockchain if the patient has granted access to the doctor
   - if yes, the backend will send the MR to the doctor streamlined as PDF in flutter
   - if not, the backend will send a message to the doctor that he has no access to the MR
 
-- each doctor will be linked to an institution
 - the institution will have an admin account which will be able to add doctors to the institution (later)
 - Ministry of Health will do the same and add institutions (later)
 - start of FE (soon)
 
 minor:
 - if db fails dont move to blockchain steps and reverse too
-- institution_id replaced by doctor_id
 - review all variables and functions names to be consistent across:
     - db
     - blockchain
