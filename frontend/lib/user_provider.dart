@@ -10,4 +10,8 @@ class UserProvider extends ChangeNotifier {
     _user = newUser;
     notifyListeners();
   }
+
+  String getUserID() {
+    return _user!.id;
+  }
 }

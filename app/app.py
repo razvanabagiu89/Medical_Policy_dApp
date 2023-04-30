@@ -323,8 +323,6 @@ def get_all_policies_for_patient(patient_id):
 
 @app.route("/api/patient/<patient_id>/grant_access", methods=["POST"])
 def grant_access_to_medical_record(patient_id):
-    # TODO: go to doctor and put the MR hash in his access_to
-    # TODO: same for revoke
     patient_id = int(patient_id)
     patient = entities.find_one({"ID": patient_id})
 

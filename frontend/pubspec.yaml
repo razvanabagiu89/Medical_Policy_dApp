@@ -32,7 +32,7 @@ dependencies:
     sdk: flutter
 
   http: ^0.13.3
-  file_picker: ^4.2.4
+  file_picker: ^5.2.11
   universal_html: ^2.0.8
 
 
