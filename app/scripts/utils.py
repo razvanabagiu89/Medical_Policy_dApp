@@ -5,7 +5,7 @@ from hashlib import sha256
 from dotenv import load_dotenv
 import os
 from solcx import compile_source, install_solc
-
+import boto3
 
 def connect_to_web3_address(address):
     web3 = Web3(Web3.HTTPProvider(address))
@@ -46,6 +46,8 @@ admin_address = os.environ.get("ADMIN_ADDRESS")
 admin_private_key = os.getenv("ADMIN_PRIVATE_KEY")
 s3_access_key = os.environ.get("ACCESS_KEY")
 s3_secret_key = os.environ.get("SECRET_ACCESS_KEY")
+s3_bucket_name = "bucket-test-rzw"
+s3_region = "eu-west-2"
 
 app_config = load_yaml_file("app_config.yaml")
 
@@ -264,3 +266,10 @@ def get_contract(web3, contract_name, contract_address):
         contract = web3.eth.contract(address=contract_address, abi=abi)
 
         return contract
+
+def upload_file_to_s3(request, medical_record_hash):
+    s3_client = boto3.client("s3", region_name=s3_region, aws_access_key_id=s3_access_key, aws_secret_access_key=s3_secret_key)
+    bucket_name = s3_bucket_name
+    file_key = f"medical_records/{medical_record_hash}.pdf"
+    file_content = request.files["file"].read()  # Assumes the file is sent as a multipart form-data field named "file"
+    s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=file_content)

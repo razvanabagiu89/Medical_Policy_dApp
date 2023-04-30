@@ -1,10 +1,12 @@
-from flask import Flask, request, session, jsonify
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from pymongo import MongoClient, errors, ASCENDING
 from web3 import Web3
 from scripts.utils import *
 import datetime
 
 app = Flask(__name__)
+CORS(app)
 app.secret_key = app_secret_key
 app.config["app.json.compact"] = False
 
@@ -21,17 +23,45 @@ access_policy_contract = get_contract(
     web3, "AccessPolicyContract", access_policy_contract_address
 )
 
+@app.route("/api/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    username = data.get("username")
+    password = data.get("password")
+
+    if not username or not password:
+        return jsonify({"status": "error", "message": "Missing username or password"}), 400
+
+    user = entities.find_one({"username": username})
+
+    if not user or not user["password"] == password:
+        return jsonify({"status": "error", "message": "Invalid username or password"}), 401
+    
+    return jsonify({"status": "success", "message": "Login successful", "patient_id": user["ID"]}), 200
+
 
 @app.route("/api/patient", methods=["POST"])
 def add_patient():
+    #DONE: no duplicates by username
     patient_username = request.json["username"]
+    patient = entities.find_one({"username": patient_username})
+    if patient:
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "message": "A patient with this username already exists.",
+                }
+            ),
+            400,
+        )
     patient_password = request.json["password"]
     patient_address = request.json["patient_address"]
     patient_address_converted = Web3.to_checksum_address(patient_address)
 
     inserted = False
     while not inserted:
-        patient_id = randint(0, 5)
+        patient_id = randint(0, 10)
         try:
             # db
             entities.insert_one(
@@ -221,6 +251,8 @@ def add_medical_record(patient_id):
         patient_address_converted = Web3.to_checksum_address(patient_address)
         filename = request.json["filename"]
         medical_record_hash = compute_hash(filename + str(datetime.datetime.now()))
+        # s3
+        # upload_file_to_s3(request, medical_record_hash)
         # db
         entities.update_one(
             {"ID": patient_id},
