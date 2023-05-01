@@ -32,8 +32,12 @@ class _GrantAccessState extends State<GrantAccess> {
       stringToBytes32(_doctorId)
     ]);
     await tx.wait();
-    print(await contract.call('getPatientPolicyAllowedByMedicalRecordHash',
-        [patientAddress, hexStringToUint8List(_fileHash)]));
+    List<dynamic> ids = await contract.call(
+        'getPatientPolicyAllowedByMedicalRecordHash',
+        [patientAddress, hexStringToUint8List(_fileHash)]);
+    // for (var id in ids) {
+    //   print(bytes32ToString(id));
+    // }
     ////////////////////////// backend //////////////////////////
     final url = 'http://localhost:5000/api/patient/$patientId/grant_access';
     final response = await http.post(

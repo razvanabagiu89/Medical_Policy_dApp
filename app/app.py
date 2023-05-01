@@ -349,7 +349,7 @@ def grant_access_to_medical_record(patient_id):
         # patient_address_converted = Web3.to_checksum_address(patient_address)
         file_hash = request.json["file_hash"]
         doctor_id = request.json["doctor_id"]
-        doctor_id_bytes = string_to_bytes32(doctor_id)
+        # doctor_id_bytes = string_to_bytes32(doctor_id)
 
         try:
             # db
@@ -362,13 +362,13 @@ def grant_access_to_medical_record(patient_id):
             else:
                 return jsonify({"status": "error", "message": "Doctor not found."}), 404
             # blockchain
-            grant_access(
-                access_policy_contract,
-                patient_address_converted,
-                hex_to_bytes32(file_hash),
-                doctor_id_bytes,
-                web3,
-            )
+            # grant_access(
+            #     access_policy_contract,
+            #     patient_address_converted,
+            #     hex_to_bytes32(file_hash),
+            #     doctor_id_bytes,
+            #     web3,
+            # )
             return jsonify({"status": "success", "message": "Access granted."}), 200
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)}), 400
@@ -383,7 +383,7 @@ def revoke_access_to_medical_record(patient_id):
 
     if patient:
         patient_address = request.json["patient_address"]
-        patient_address_converted = Web3.to_checksum_address(patient_address)
+        # patient_address_converted = Web3.to_checksum_address(patient_address)
         file_hash = request.json["file_hash"]
         doctor_id = request.json["doctor_id"]
         doctor_id_bytes = string_to_bytes32(doctor_id)
@@ -399,13 +399,13 @@ def revoke_access_to_medical_record(patient_id):
             else:
                 return jsonify({"status": "error", "message": "Doctor not found."}), 404
             # blockchain
-            revoke_access(
-                access_policy_contract,
-                patient_address_converted,
-                hex_to_bytes32(file_hash),
-                doctor_id_bytes,
-                web3,
-            )
+            # revoke_access(
+            #     access_policy_contract,
+            #     patient_address_converted,
+            #     hex_to_bytes32(file_hash),
+            #     doctor_id_bytes,
+            #     web3,
+            # )
             return jsonify({"status": "success", "message": "Access revoked."}), 200
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)}), 400

@@ -4,6 +4,10 @@ import 'dart:convert';
 import 'user_provider.dart';
 import 'metamask_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_web3/flutter_web3.dart';
+import 'utils.dart';
+import "package:hex/hex.dart";
+
 
 class RevokeAccess extends StatefulWidget {
   @override
@@ -13,14 +17,48 @@ class RevokeAccess extends StatefulWidget {
 class _RevokeAccessState extends State<RevokeAccess> {
   final _formKey = GlobalKey<FormState>();
   String _doctorId = '';
-  String _fileHash = '';
+  String _fileHash = ''; // hex string
+
+  Future<void> revokeAccess(BuildContext context) async {
+    final patientAddress = context.read<MetaMaskProvider>().currentAddress;
+    final userModel = context.read<UserProvider>();
+    final patientId = userModel.getUserID();
+    ////////////////////////// blockchain //////////////////////////
+    final signer = provider!.getSigner();
+    final contract = await getAccessPolicyContract(signer);
+    final tx = await contract.send('revokeAccess', [
+      patientAddress,
+      hexStringToUint8List(_fileHash),
+      stringToBytes32(_doctorId)
+    ]);
+    await tx.wait();
+    List<dynamic> ids = await contract.call(
+        'getPatientPolicyAllowedByMedicalRecordHash',
+        [patientAddress, hexStringToUint8List(_fileHash)]);
+    ////////////////////////// backend //////////////////////////
+    final url = 'http://localhost:5000/api/patient/$patientId/revoke';
+    final response = await http.post(
+      Uri.parse(url),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(<String, String>{
+        'doctor_id': _doctorId,
+        'file_hash': _fileHash,
+        'patient_address': patientAddress,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      Navigator.pop(context);
+      print("Access revoked successfully");
+    } else {
+      print("Error: ${response.body}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.read<MetaMaskProvider>();
-    final userModel = context.read<UserProvider>();
-    final patientId = userModel.getUserID();
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Revoke Access'),
@@ -69,25 +107,7 @@ class _RevokeAccessState extends State<RevokeAccess> {
                 child: ElevatedButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      final url =
-                          'http://localhost:5000/api/patient/$patientId/revoke';
-                      final response = await http.post(Uri.parse(url),
-                          headers: <String, String>{
-                            'Content-Type': 'application/json',
-                          },
-                          body: jsonEncode(<String, String>{
-                            'doctor_id': _doctorId,
-                            'file_hash': _fileHash,
-                            'patient_address': provider.currentAddress,
-                          }));
-                      if (response.statusCode == 200) {
-                        // access revoked successfully
-                        Navigator.pop(context);
-                        print("Access revoked successfully");
-                      } else {
-                        // handle error
-                        print("Error: ${response.body}");
-                      }
+                      await revokeAccess(context);
                     }
                   },
                   child: Text('Revoke Access'),

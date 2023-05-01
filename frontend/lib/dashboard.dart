@@ -5,6 +5,7 @@ import 'package:flutter_web3/flutter_web3.dart';
 import 'add_mr.dart';
 import 'grant.dart';
 import 'revoke.dart';
+import 'show_access.dart';
 
 class Dashboard extends StatelessWidget {
   @override
@@ -45,10 +46,8 @@ class Dashboard extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 // Navigate to the Grant Access screen
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => GrantAccess()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => GrantAccess()));
               },
               child: const Text('Grant Access'),
             ),
@@ -56,17 +55,18 @@ class Dashboard extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 // Navigate to the Revoke Access screen
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => RevokeAccess()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => RevokeAccess()));
               },
               child: const Text('Revoke Access'),
             ),
             const SizedBox(height: 12.0),
             ElevatedButton(
               onPressed: () {
-                // Navigate to the Show Accesses screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ShowAccessesScreen()),
+                );
               },
               child: const Text('Show Accesses'),
             ),

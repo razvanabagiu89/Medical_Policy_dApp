@@ -46,15 +46,30 @@ Future<Contract> getContract({
   return contract;
 }
 
-Uint8List stringToBytes32(String str) {
-  List<int> bytes = utf8.encode(str);
-  if (bytes.length > 32) {
-    throw ArgumentError('String is too long to fit into bytes32.');
-  }
+// Uint8List stringToBytes32(String str) {
+//   List<int> bytes = utf8.encode(str);
+//   if (bytes.length > 32) {
+//     throw ArgumentError('String is too long to fit into bytes32.');
+//   }
 
-  Uint8List paddedBytes = Uint8List(32);
-  paddedBytes.setRange(0, bytes.length, bytes);
-  return paddedBytes;
+//   Uint8List paddedBytes = Uint8List(32);
+//   paddedBytes.setRange(0, bytes.length, bytes);
+//   return paddedBytes;
+// }
+
+Uint8List stringToBytes32(String inputString) {
+  List<int> encodedString = utf8.encode(inputString);
+  Uint8List bytes32 = Uint8List(32);
+  int maxLength = encodedString.length > 32 ? 32 : encodedString.length;
+  bytes32.setRange(0, maxLength, encodedString);
+  return bytes32;
+}
+
+String bytes32ToString(String inputHexString) {
+  inputHexString = inputHexString.substring(2);
+  Uint8List inputBytes = Uint8List.fromList(HEX.decode(inputHexString));
+  String decodedString = utf8.decode(inputBytes);
+  return decodedString.trimRight();
 }
 
 String computeHash(String filename) {
@@ -72,7 +87,8 @@ Uint8List hexStringToUint8List(String hexString) {
   return Uint8List.fromList(intList);
 }
 
-String bytes32ToString(Uint8List bytes32) {
+// not tested - bytes 32 hex to string
+String bytes32HexToString(Uint8List bytes32) {
   final hexString = HEX.encode(bytes32);
   final codeUnits = hexString.codeUnits;
   return String.fromCharCodes(codeUnits);
