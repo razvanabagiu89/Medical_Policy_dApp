@@ -4,6 +4,10 @@ import 'dart:convert';
 import 'user_provider.dart';
 import 'metamask_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_web3/flutter_web3.dart';
+import 'utils.dart';
+import 'package:hex/hex.dart';
+import 'dart:typed_data';
 
 class GrantAccess extends StatefulWidget {
   @override
@@ -13,14 +17,47 @@ class GrantAccess extends StatefulWidget {
 class _GrantAccessState extends State<GrantAccess> {
   final _formKey = GlobalKey<FormState>();
   String _doctorId = '';
-  String _fileHash = '';
+  String _fileHash = ''; // hex string
+
+  Future<void> grantAccess(BuildContext context) async {
+    final patientAddress = context.read<MetaMaskProvider>().currentAddress;
+    final userModel = context.read<UserProvider>();
+    final patientId = userModel.getUserID();
+    ////////////////////////// blockchain //////////////////////////
+    final signer = provider!.getSigner();
+    final contract = await getAccessPolicyContract(signer);
+    final tx = await contract.send('grantAccess', [
+      patientAddress,
+      hexStringToUint8List(_fileHash),
+      stringToBytes32(_doctorId)
+    ]);
+    await tx.wait();
+    print(await contract.call('getPatientPolicyAllowedByMedicalRecordHash',
+        [patientAddress, hexStringToUint8List(_fileHash)]));
+    ////////////////////////// backend //////////////////////////
+    final url = 'http://localhost:5000/api/patient/$patientId/grant_access';
+    final response = await http.post(
+      Uri.parse(url),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(<String, String>{
+        'doctor_id': _doctorId,
+        'file_hash': _fileHash,
+        'patient_address': patientAddress,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      Navigator.pop(context);
+      print("Access granted successfully");
+    } else {
+      print("Error: ${response.body}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.read<MetaMaskProvider>();
-    final userModel = context.read<UserProvider>();
-    final patientId = userModel.getUserID();
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Grant Access'),
@@ -69,25 +106,7 @@ class _GrantAccessState extends State<GrantAccess> {
                 child: ElevatedButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      final url =
-                          'http://localhost:5000/api/patient/$patientId/grant_access';
-                      final response = await http.post(Uri.parse(url),
-                          headers: <String, String>{
-                            'Content-Type': 'application/json',
-                          },
-                          body: jsonEncode(<String, String>{
-                            'doctor_id': _doctorId,
-                            'file_hash': _fileHash,
-                            'patient_address': provider.currentAddress,
-                          }));
-                      if (response.statusCode == 200) {
-                        // access granted successfully
-                        Navigator.pop(context);
-                        print("Access granted successfully");
-                      } else {
-                        // handle error
-                        print("Error: ${response.body}");
-                      }
+                      await grantAccess(context);
                     }
                   },
                   child: Text('Grant Access'),

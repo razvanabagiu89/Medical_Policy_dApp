@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:math';
+import 'utils.dart';
+import 'package:flutter_web3/flutter_web3.dart';
+import 'package:flutter/services.dart';
 
 class Registration extends StatefulWidget {
   @override
@@ -16,15 +20,17 @@ class _RegistrationState extends State<Registration> {
   Future<void> _sendDataToBackend(BuildContext context) async {
     final String username = _usernameController.text;
     final String password = _passwordController.text;
-    final String web3Address = context.read<MetaMaskProvider>().currentAddress;
+    final String patientAddress =
+        context.read<MetaMaskProvider>().currentAddress;
 
+    // registration + create first is done by the admin
     final response = await http.post(
       Uri.parse('http://127.0.0.1:5000/api/patient'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'username': username,
         'password': password,
-        'patient_address': web3Address,
+        'patient_address': patientAddress,
       }),
     );
 

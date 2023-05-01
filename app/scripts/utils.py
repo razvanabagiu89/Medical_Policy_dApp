@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import os
 from solcx import compile_source, install_solc
 import boto3
+import json
 
 def connect_to_web3_address(address):
     web3 = Web3(Web3.HTTPProvider(address))
@@ -16,28 +17,6 @@ def load_yaml_file(file):
     with open(file, "r") as stream:
         yaml_file = safe_load(stream)
     return yaml_file
-
-
-def get_contract(web3, contract_name, contract_address):
-    code = web3.eth.get_code(contract_address)
-
-    if code.hex() == "0x":
-        print(f"Contract not found at address {contract_address}")
-        exit()
-    else:
-        with open(f"contracts/{contract_name}.sol", "r") as file:
-            source_code = file.read()
-        compiled_contract = compile_source(
-            source=source_code,
-            output_values=["abi", "bin"],
-            solc_version="0.8.0",
-        )
-        contract_interface = compiled_contract[f"<stdin>:{contract_name}"]
-        abi = contract_interface["abi"]
-        contract = web3.eth.contract(address=contract_address, abi=abi)
-
-        return contract
-
 
 ########################################## App ##########################################
 
@@ -263,6 +242,12 @@ def get_contract(web3, contract_name, contract_address):
         )
         contract_interface = compiled_contract[f"<stdin>:{contract_name}"]
         abi = contract_interface["abi"]
+        abi_json = json.dumps(abi)
+        # abi2 = ''.join(abi)
+        f = open(f"../frontend/contracts/{contract_name}.abi", "w+")
+        f.write(abi_json)
+        f.close()
+
         contract = web3.eth.contract(address=contract_address, abi=abi)
 
         return contract

@@ -23,26 +23,9 @@ access_policy_contract = get_contract(
     web3, "AccessPolicyContract", access_policy_contract_address
 )
 
-@app.route("/api/login", methods=["POST"])
-def login():
-    data = request.get_json()
-    username = data.get("username")
-    password = data.get("password")
-
-    if not username or not password:
-        return jsonify({"status": "error", "message": "Missing username or password"}), 400
-
-    user = entities.find_one({"username": username})
-
-    if not user or not user["password"] == password:
-        return jsonify({"status": "error", "message": "Invalid username or password"}), 401
-    
-    return jsonify({"status": "success", "message": "Login successful", "patient_id": user["ID"]}), 200
-
 
 @app.route("/api/patient", methods=["POST"])
 def add_patient():
-    #DONE: no duplicates by username
     patient_username = request.json["username"]
     patient = entities.find_one({"username": patient_username})
     if patient:
@@ -61,7 +44,7 @@ def add_patient():
 
     inserted = False
     while not inserted:
-        patient_id = randint(0, 10)
+        patient_id = randint(0, 255)
         try:
             # db
             entities.insert_one(
@@ -177,6 +160,38 @@ def add_doctor(institution_CIF):
         return jsonify({"status": "error", "message": str(e)}), 400
 
 
+@app.route("/api/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    username = data.get("username")
+    password = data.get("password")
+
+    if not username or not password:
+        return (
+            jsonify({"status": "error", "message": "Missing username or password"}),
+            400,
+        )
+
+    user = entities.find_one({"username": username})
+
+    if not user or not user["password"] == password:
+        return (
+            jsonify({"status": "error", "message": "Invalid username or password"}),
+            401,
+        )
+
+    return (
+        jsonify(
+            {
+                "status": "success",
+                "message": "Login successful",
+                "patient_id": user["ID"],
+            }
+        ),
+        200,
+    )
+
+
 @app.route("/api/patient/<patient_id>/wallet", methods=["POST"])
 def add_wallet(patient_id):
     patient_id = int(patient_id)
@@ -248,9 +263,12 @@ def add_medical_record(patient_id):
 
     if patient:
         patient_address = request.json["patient_address"]
-        patient_address_converted = Web3.to_checksum_address(patient_address)
+        # patient_address_converted = Web3.to_checksum_address(patient_address)
         filename = request.json["filename"]
-        medical_record_hash = compute_hash(filename + str(datetime.datetime.now()))
+        filedata = request.json["filedata"]
+        #TODO: filedata up to s3
+        # medical_record_hash = compute_hash(filename + str(datetime.datetime.now()))
+        medical_record_hash = request.json['medical_record_hash']
         # s3
         # upload_file_to_s3(request, medical_record_hash)
         # db
@@ -259,18 +277,18 @@ def add_medical_record(patient_id):
             {"$addToSet": {"medical_records_hashes": medical_record_hash}},
         )
         # blockchain
-        add_medical_record_to_patient(
-            patient_registry_contract,
-            patient_address_converted,
-            patient_id,
-            medical_record_hash,
-            web3,
-        )
+        # add_medical_record_to_patient(
+        #     patient_registry_contract,
+        #     patient_address_converted,
+        #     patient_id,
+        #     medical_record_hash,
+        #     web3,
+        # )
         print("Medical record added to patient with ID:", patient_id)
         return (
             jsonify(
-                {"status": "success", "medical_record_hash": medical_record_hash.hex()}
-            ),  # notice hex() because bytes is not JSON serializable
+                {"status": "success"}
+            ), 
             201,
         )
     else:
@@ -328,7 +346,7 @@ def grant_access_to_medical_record(patient_id):
 
     if patient:
         patient_address = request.json["patient_address"]
-        patient_address_converted = Web3.to_checksum_address(patient_address)
+        # patient_address_converted = Web3.to_checksum_address(patient_address)
         file_hash = request.json["file_hash"]
         doctor_id = request.json["doctor_id"]
         doctor_id_bytes = string_to_bytes32(doctor_id)
