@@ -44,6 +44,7 @@ each institution is uniquely identified by his CIF (input)
 - parse app config in flutter for contract addresses
 - more utils funcs
 - remove medical record
+- remove wallet
 - add wallet (+ add policy inside - 2 tx's)
 - duplicate checks for creations, adding etc. - involve http request from frontend to backend
 - involve S3 for MR:

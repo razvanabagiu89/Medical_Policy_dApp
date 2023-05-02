@@ -34,7 +34,6 @@ class Dashboard extends StatelessWidget {
             const SizedBox(height: 24.0),
             ElevatedButton(
               onPressed: () {
-                // Navigate to the Add Medical Record screen
                 Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -45,7 +44,6 @@ class Dashboard extends StatelessWidget {
             const SizedBox(height: 12.0),
             ElevatedButton(
               onPressed: () {
-                // Navigate to the Grant Access screen
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => GrantAccess()));
               },
@@ -54,7 +52,6 @@ class Dashboard extends StatelessWidget {
             const SizedBox(height: 12.0),
             ElevatedButton(
               onPressed: () {
-                // Navigate to the Revoke Access screen
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => RevokeAccess()));
               },
@@ -72,9 +69,7 @@ class Dashboard extends StatelessWidget {
             ),
             const SizedBox(height: 12.0),
             ElevatedButton(
-              onPressed: () {
-                // Navigate to the Add Wallet screen
-              },
+              onPressed: () {},
               child: const Text('Add Wallet'),
             ),
           ],

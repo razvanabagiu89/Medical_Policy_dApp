@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_web3/flutter_web3.dart';
 
 class MetaMaskProvider extends ChangeNotifier {
-  // ganache chain id is 1337
+  // ganache chain id
   static const operatingChain = 1337;
   String currentAddress = "";
   int currentChain = -1;

@@ -7,17 +7,15 @@ import 'package:hex/hex.dart';
 
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
-import 'package:path/path.dart' as p;
-import 'package:flutter/material.dart';
 import 'package:flutter_web3/flutter_web3.dart';
 import 'package:crypto/crypto.dart';
 
 String patientRegistryContractAddress =
-    '0xEDE52DF912A549dfB0DFb828e4A77CF5d6f4953c';
+    '0x1Cc786ee1c6A1E94102803fCf25a03bc2dd20730';
 String patientRegistryContractJsonPath =
     'contracts/PatientRegistryContract.json';
 String accessPolicyContractAddress =
-    '0xe4B121cB7F3dA058C6522f34e0b80244fC663997';
+    '0xaed82b64EA31ce0C1E9A4EB109B02E5ba08bE5ba';
 String accessPolicyContractJsonPath = 'contracts/AccessPolicyContract.json';
 
 Future<Contract> getPatientRegistryContract(Signer provider) async {
@@ -45,17 +43,6 @@ Future<Contract> getContract({
   final contract = Contract(contractAddress, abiString, provider);
   return contract;
 }
-
-// Uint8List stringToBytes32(String str) {
-//   List<int> bytes = utf8.encode(str);
-//   if (bytes.length > 32) {
-//     throw ArgumentError('String is too long to fit into bytes32.');
-//   }
-
-//   Uint8List paddedBytes = Uint8List(32);
-//   paddedBytes.setRange(0, bytes.length, bytes);
-//   return paddedBytes;
-// }
 
 Uint8List stringToBytes32(String inputString) {
   List<int> encodedString = utf8.encode(inputString);
@@ -87,7 +74,7 @@ Uint8List hexStringToUint8List(String hexString) {
   return Uint8List.fromList(intList);
 }
 
-// not tested - bytes 32 hex to string
+// not tested
 String bytes32HexToString(Uint8List bytes32) {
   final hexString = HEX.encode(bytes32);
   final codeUnits = hexString.codeUnits;

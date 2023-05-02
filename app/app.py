@@ -1,9 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient, errors, ASCENDING
-from web3 import Web3
+from web3 import Web3, exceptions
 from scripts.utils import *
-import datetime
 
 app = Flask(__name__)
 CORS(app)
@@ -15,6 +14,10 @@ db = client[db_name]
 entities = db[entities]
 entities.create_index([("ID", ASCENDING)], unique=True)
 
+"""
+used just for read-only txs (getters) and admin calls (add_patient, create_policies)
+just admin will issue txs to add patients and create policies to not get malicious txs from other users
+"""
 web3 = Web3(Web3.HTTPProvider(web3_host))
 patient_registry_contract = get_contract(
     web3, "PatientRegistryContract", patient_registry_contract_address
@@ -24,6 +27,7 @@ access_policy_contract = get_contract(
 )
 
 
+# called just by admin - Ownable.sol modifier
 @app.route("/api/patient", methods=["POST"])
 def add_patient():
     patient_username = request.json["username"]
@@ -122,9 +126,7 @@ def add_doctor(institution_CIF):
     doctor_username = request.json["username"]
     doctor_password = request.json["password"]
     doctor_full_name = request.json["full_name"]
-    doctor_id = institution_CIF + str(
-        randint(0, 5)
-    )  # TODO check with bytes32 compatible
+    doctor_id = institution_CIF + str(randint(0, 5))
 
     try:
         institution = entities.find_one({"ID": institution_CIF, "type": "institution"})
@@ -192,6 +194,7 @@ def login():
     )
 
 
+# TODO: redo with FE
 @app.route("/api/patient/<patient_id>/wallet", methods=["POST"])
 def add_wallet(patient_id):
     patient_id = int(patient_id)
@@ -263,32 +266,18 @@ def add_medical_record(patient_id):
 
     if patient:
         patient_address = request.json["patient_address"]
-        # patient_address_converted = Web3.to_checksum_address(patient_address)
-        filename = request.json["filename"]
         filedata = request.json["filedata"]
-        #TODO: filedata up to s3
-        # medical_record_hash = compute_hash(filename + str(datetime.datetime.now()))
-        medical_record_hash = request.json['medical_record_hash']
-        # s3
+        # TODO: filedata up to s3
+        medical_record_hash = request.json["medical_record_hash"]
         # upload_file_to_s3(request, medical_record_hash)
         # db
         entities.update_one(
             {"ID": patient_id},
             {"$addToSet": {"medical_records_hashes": medical_record_hash}},
         )
-        # blockchain
-        # add_medical_record_to_patient(
-        #     patient_registry_contract,
-        #     patient_address_converted,
-        #     patient_id,
-        #     medical_record_hash,
-        #     web3,
-        # )
         print("Medical record added to patient with ID:", patient_id)
         return (
-            jsonify(
-                {"status": "success"}
-            ), 
+            jsonify({"status": "success"}),
             201,
         )
     else:
@@ -303,10 +292,6 @@ def get_all_policies_for_patient(patient_id):
     if patient:
         medical_record_policies = {}
 
-        # convert binary to hex strings
-        # hex_medical_records_hashes = [
-        #     hash_data.hex() for hash_data in patient["medical_records_hashes"]
-        # ]
         for file_hash in patient["medical_records_hashes"]:
             file_hash_policies = {}
             for wallet in patient["wallets"]:
@@ -345,12 +330,8 @@ def grant_access_to_medical_record(patient_id):
     patient = entities.find_one({"ID": patient_id})
 
     if patient:
-        patient_address = request.json["patient_address"]
-        # patient_address_converted = Web3.to_checksum_address(patient_address)
         file_hash = request.json["file_hash"]
         doctor_id = request.json["doctor_id"]
-        # doctor_id_bytes = string_to_bytes32(doctor_id)
-
         try:
             # db
             doctor = entities.find_one({"ID": doctor_id, "type": "doctor"})
@@ -361,14 +342,6 @@ def grant_access_to_medical_record(patient_id):
                 )
             else:
                 return jsonify({"status": "error", "message": "Doctor not found."}), 404
-            # blockchain
-            # grant_access(
-            #     access_policy_contract,
-            #     patient_address_converted,
-            #     hex_to_bytes32(file_hash),
-            #     doctor_id_bytes,
-            #     web3,
-            # )
             return jsonify({"status": "success", "message": "Access granted."}), 200
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)}), 400
@@ -382,11 +355,8 @@ def revoke_access_to_medical_record(patient_id):
     patient = entities.find_one({"ID": patient_id})
 
     if patient:
-        patient_address = request.json["patient_address"]
-        # patient_address_converted = Web3.to_checksum_address(patient_address)
         file_hash = request.json["file_hash"]
         doctor_id = request.json["doctor_id"]
-        doctor_id_bytes = string_to_bytes32(doctor_id)
 
         try:
             # db
@@ -398,14 +368,6 @@ def revoke_access_to_medical_record(patient_id):
                 )
             else:
                 return jsonify({"status": "error", "message": "Doctor not found."}), 404
-            # blockchain
-            # revoke_access(
-            #     access_policy_contract,
-            #     patient_address_converted,
-            #     hex_to_bytes32(file_hash),
-            #     doctor_id_bytes,
-            #     web3,
-            # )
             return jsonify({"status": "success", "message": "Access revoked."}), 200
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)}), 400

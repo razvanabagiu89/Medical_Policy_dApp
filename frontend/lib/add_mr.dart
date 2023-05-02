@@ -30,8 +30,8 @@ class AddMedicalRecord extends StatelessWidget {
       final contract = await getPatientRegistryContract(signer);
       String medicalRecordHash = computeHash(fileName);
       List<int> medicalRecordBytes32 = hexStringToUint8List(medicalRecordHash);
-      final tx =
-          await contract.send('addMedicalRecord', [210, medicalRecordBytes32]);
+      final tx = await contract
+          .send('addMedicalRecord', [patientId, medicalRecordBytes32]);
       await tx.wait();
       ////////////////////////// backend //////////////////////////
 

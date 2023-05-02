@@ -23,7 +23,7 @@ class _RegistrationState extends State<Registration> {
     final String patientAddress =
         context.read<MetaMaskProvider>().currentAddress;
 
-    // registration + create first is done by the admin
+    // registration + create is done by the admin to avoid unauthorized txs
     final response = await http.post(
       Uri.parse('http://127.0.0.1:5000/api/patient'),
       headers: {'Content-Type': 'application/json'},

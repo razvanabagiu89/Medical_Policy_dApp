@@ -1,4 +1,4 @@
-from web3 import Web3, exceptions
+from web3 import Web3
 from yaml import safe_load
 from random import *
 from hashlib import sha256
@@ -90,12 +90,12 @@ def get_patient_count(patient_registry_contract):
     patient_count = patient_registry_contract.functions.patientCount().call()
     return patient_count
 
-
+# deprecated - used only in tests
 def compute_hash(filename):
     file_hash = bytes.fromhex(sha256(filename.encode("utf-8")).hexdigest())
     return file_hash
 
-
+# deprecated - used only in tests
 def add_medical_record_to_patient(
     patient_registry_contract, patient_address, patient_id, file_hash, web3_instance
 ):
@@ -109,7 +109,12 @@ def add_medical_record_to_patient(
 class WalletAddressAlreadyExists(Exception):
     pass
 
-
+#TODO
+# 1. check if this wallet address already exists for this patient
+# 2. if not, issue tx in fe
+# 3. if yes, just send back error message
+# 4. call it check_wallet_exists()
+# deprecated - used only in tests
 def add_wallet_to_patient(
     patient_registry_contract,
     patient_address,
@@ -142,7 +147,7 @@ def string_to_bytes32(input_string: str):
 def hex_to_bytes32(input_string: str):
     return Web3.to_bytes(hexstr=input_string).ljust(32, b"\0")
 
-
+# onlyOwner
 def create_policies(access_policy_contract, patient_address, web3_instance):
     tx_hash = access_policy_contract.functions.createPolicies(patient_address).transact(
         {"from": admin_address}
@@ -150,7 +155,7 @@ def create_policies(access_policy_contract, patient_address, web3_instance):
     tx_receipt = web3_instance.eth.wait_for_transaction_receipt(tx_hash)
     return tx_receipt
 
-
+# deprecated - used only in tests
 def grant_access(
     access_policy_contract,
     patient_address,
@@ -164,7 +169,7 @@ def grant_access(
     tx_receipt = web3_instance.eth.wait_for_transaction_receipt(tx_hash)
     return tx_receipt
 
-
+# deprecated - used only in tests
 def revoke_access(
     access_policy_contract,
     patient_address,
