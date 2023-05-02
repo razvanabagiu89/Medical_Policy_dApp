@@ -194,7 +194,6 @@ def login():
     )
 
 
-# TODO: redo with FE
 @app.route("/api/patient/<patient_id>/wallet", methods=["POST"])
 def add_wallet(patient_id):
     patient_id = int(patient_id)
