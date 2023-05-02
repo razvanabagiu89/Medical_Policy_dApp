@@ -304,10 +304,10 @@ def get_all_policies_for_patient(patient_id):
         medical_record_policies = {}
 
         # convert binary to hex strings
-        hex_medical_records_hashes = [
-            hash_data.hex() for hash_data in patient["medical_records_hashes"]
-        ]
-        for file_hash in hex_medical_records_hashes:
+        # hex_medical_records_hashes = [
+        #     hash_data.hex() for hash_data in patient["medical_records_hashes"]
+        # ]
+        for file_hash in patient["medical_records_hashes"]:
             file_hash_policies = {}
             for wallet in patient["wallets"]:
                 doctor_ids = get_patient_policy_allowed_by_medical_record_hash(

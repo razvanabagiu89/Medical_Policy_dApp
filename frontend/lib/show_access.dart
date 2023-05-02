@@ -1,55 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'user_provider.dart';
+import 'metamask_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_web3/flutter_web3.dart';
+import 'utils.dart';
+import "package:hex/hex.dart";
 
-class ShowAccessesScreen extends StatefulWidget {
-  @override
-  _ShowAccessesScreenState createState() => _ShowAccessesScreenState();
-}
+class ShowAccessesScreen extends StatelessWidget {
+  const ShowAccessesScreen({Key? key}) : super(key: key);
 
-class _ShowAccessesScreenState extends State<ShowAccessesScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _fileHashController = TextEditingController();
+  Future<void> _showAccesses(BuildContext context) async {
+    final userModel = context.read<UserProvider>();
+    final patientId = userModel.getUserID();
+    ////////////////////////// backend //////////////////////////
+    final url = 'http://localhost:5000/api/patient/$patientId/all_policies';
+    final response = await http.get(
+      Uri.parse(url),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+    );
 
-  @override
-  void dispose() {
-    _fileHashController.dispose();
-    super.dispose();
+    if (response.statusCode == 200) {
+      Navigator.pop(context);
+      print("Show access successfully");
+      print(response.body);
+    } else {
+      print("Error: ${response.body}");
+    }
   }
-
-  Future<void> _showAccesses(BuildContext context) async {}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Show Accesses'),
-      ),
-      body: Form(
-        key: _formKey,
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              TextFormField(
-                controller: _fileHashController,
-                decoration: InputDecoration(labelText: 'Filehash'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a filehash';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 12.0),
-              ElevatedButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    await _showAccesses(context);
-                  }
-                },
-                child: Text('Submit'),
-              ),
-            ],
-          ),
+      appBar: AppBar(title: const Text('Show Accesses')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () async {
+                await _showAccesses(context);
+              },
+              child: const Text('Show'),
+            ),
+          ],
         ),
       ),
     );
