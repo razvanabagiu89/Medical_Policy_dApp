@@ -3,6 +3,8 @@ from flask_cors import CORS
 from pymongo import MongoClient, errors, ASCENDING
 from web3 import Web3, exceptions
 from scripts.utils import *
+import string
+import random
 
 app = Flask(__name__)
 CORS(app)
@@ -16,7 +18,7 @@ entities.create_index([("ID", ASCENDING)], unique=True)
 
 """
 used just for read-only txs (getters) and admin calls (add_patient, create_policies)
-just admin will issue txs to add patients and create policies to not get malicious txs from other users
+just admin will issue txs to add patients and create policies to not get malicious txs from others
 """
 web3 = Web3(Web3.HTTPProvider(web3_host))
 patient_registry_contract = get_contract(
@@ -90,10 +92,13 @@ def add_patient():
     )
 
 
-@app.route("/api/institution", methods=["POST"])
+@app.route("/api/institution/add", methods=["POST"])
 def add_institution():
     institution_username = request.json["username"]
-    institution_password = request.json["password"]
+    # generate a random password for the institution of 8 characters
+    institution_password = "".join(
+        random.choice(string.ascii_letters) for i in range(8)
+    )
     institution_CIF = request.json["CIF"]
 
     try:
@@ -102,12 +107,21 @@ def add_institution():
             {
                 "username": institution_username,
                 "password": institution_password,
-                "ID": institution_CIF,
+                "CIF": int(institution_CIF),
                 "type": "institution",
             }
         )
         print("Institution inserted with CIF:", institution_CIF)
-        return jsonify({"status": "success", "CIF": institution_CIF}), 201
+        return (
+            jsonify(
+                {
+                    "status": "success",
+                    "CIF": institution_CIF,
+                    "password": institution_password,
+                }
+            ),
+            201,
+        )
     except errors.DuplicateKeyError:
         print("Error: An institution with this CIF already exists.")
         return (
@@ -115,6 +129,27 @@ def add_institution():
                 {
                     "status": "error",
                     "message": "An institution with this CIF already exists.",
+                }
+            ),
+            400,
+        )
+
+
+@app.route("/api/institution/remove", methods=["POST"])
+def remove_institution():
+    institution_username = request.json["username"]
+    try:
+        # db
+        entities.delete_one({"username": institution_username, "type": "institution"})
+        print("Institution deleted:", institution_username)
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        print(f"Error: {e}")
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "message": "Error in backend: mongodb could not delete institution.",
                 }
             ),
             400,

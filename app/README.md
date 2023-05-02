@@ -41,7 +41,6 @@ each wallet is unique in patient's wallet list
 each institution is uniquely identified by his CIF (input)
 
 #### todo:
-- parse app config in flutter for contract addresses
 - more utils funcs
 - remove medical record
 - remove wallet
@@ -53,8 +52,7 @@ with the blockchain if the patient has granted access to the doctor
   - if yes, the backend will send the MR to the doctor streamlined as PDF in flutter
   - if not, the backend will send a message to the doctor that he has no access to the MR
 
-- the institution will have an admin account which will be able to add doctors to the institution (later)
-- Ministry of Health will do the same and add institutions (later)
+
 
 
 minor:

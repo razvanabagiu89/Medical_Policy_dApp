@@ -6,9 +6,13 @@ import 'dart:convert';
 import 'login_and_registration.dart';
 import 'user_model.dart';
 import 'user_provider.dart';
+import 'utils.dart';
 
 void main() {
   runApp(MyApp());
+  WidgetsBinding.instance?.addPostFrameCallback((_) {
+    parseYamlFile();
+  });
 }
 
 class MyApp extends StatelessWidget {

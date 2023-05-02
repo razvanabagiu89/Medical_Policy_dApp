@@ -49,7 +49,7 @@ class TestApp(TestCase):
     #     }
 
     #     response = self.client.post(
-    #         "/api/institution", data=json.dumps(data), content_type="application/json"
+    #         "/api/institution/add", data=json.dumps(data), content_type="application/json"
     #     )
 
     #     assert response.status_code == 201
@@ -64,7 +64,7 @@ class TestApp(TestCase):
         }
 
         response = self.client.post(
-            "/api/institution", data=json.dumps(data), content_type="application/json"
+            "/api/institution/add", data=json.dumps(data), content_type="application/json"
         )
         # add doc
         data = {
@@ -194,7 +194,7 @@ class TestApp(TestCase):
     #     }
 
     #     response = self.client.post(
-    #         "/api/institution", data=json.dumps(data), content_type="application/json"
+    #         "/api/institution/add", data=json.dumps(data), content_type="application/json"
     #     )
     #     # add doc
     #     data = {
@@ -271,7 +271,7 @@ class TestApp(TestCase):
     #         "CIF": CIF_demo,
     #     }
     #     response = self.client.post(
-    #         "/api/institution", data=json.dumps(data), content_type="application/json"
+    #         "/api/institution/add", data=json.dumps(data), content_type="application/json"
     #     )
     #     # add doc
     #     data = {
@@ -399,7 +399,7 @@ class TestApp(TestCase):
     #     }
 
     #     response = self.client.post(
-    #         "/api/institution", data=json.dumps(data), content_type="application/json"
+    #         "/api/institution/add", data=json.dumps(data), content_type="application/json"
     #     )
     #     # add doc
     #     data = {

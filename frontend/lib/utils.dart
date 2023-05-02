@@ -9,14 +9,23 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:flutter_web3/flutter_web3.dart';
 import 'package:crypto/crypto.dart';
+import 'package:yaml/yaml.dart';
 
-String patientRegistryContractAddress =
-    '0x1Cc786ee1c6A1E94102803fCf25a03bc2dd20730';
 String patientRegistryContractJsonPath =
     'contracts/PatientRegistryContract.json';
-String accessPolicyContractAddress =
-    '0xaed82b64EA31ce0C1E9A4EB109B02E5ba08bE5ba';
 String accessPolicyContractJsonPath = 'contracts/AccessPolicyContract.json';
+String patientRegistryContractAddress = '';
+String accessPolicyContractAddress = '';
+
+Future<void> parseYamlFile() async {
+  String yamlString = await rootBundle.loadString('app_config.yaml');
+  YamlMap yamlMap = loadYaml(yamlString);
+
+  patientRegistryContractAddress =
+      yamlMap["web3"]["patient_registry_contract_address"];
+  accessPolicyContractAddress =
+      yamlMap["web3"]["access_policy_contract_address"];
+}
 
 Future<Contract> getPatientRegistryContract(Signer provider) async {
   final contract = await getContract(

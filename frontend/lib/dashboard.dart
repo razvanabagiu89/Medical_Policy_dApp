@@ -26,7 +26,7 @@ class Dashboard extends StatelessWidget {
                   );
                 } else {
                   return Text(
-                    'Please connect to MetaMask',
+                    'MetaMask not connected, only read-only access',
                     style: const TextStyle(fontSize: 24.0),
                   );
                 }

@@ -7,6 +7,7 @@ import os
 from solcx import compile_source, install_solc
 import boto3
 import json
+import shutil;
 
 
 def connect_to_web3_address(address):
@@ -17,6 +18,8 @@ def connect_to_web3_address(address):
 def load_yaml_file(file):
     with open(file, "r") as stream:
         yaml_file = safe_load(stream)
+    if file == 'app_config.yaml':
+        shutil.copyfile(file, "../frontend/assets/" + file)
     return yaml_file
 
 

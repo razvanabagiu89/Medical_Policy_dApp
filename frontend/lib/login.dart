@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dashboard.dart';
 import 'user_model.dart';
 import 'user_provider.dart';
+import 'admin_dashboard.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -15,6 +16,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  String _selectedUserType = 'patient';
 
   Future<void> _sendDataToBackend(BuildContext context) async {
     final String username = _usernameController.text;
@@ -30,14 +32,25 @@ class _LoginState extends State<Login> {
     );
 
     if (response.statusCode == 200) {
-      print("Login successful");
-      Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-      String patientId = jsonResponse['patient_id'].toString();
+      if (username == 'admin') {
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => AdminDashboard()));
+      } else {
+        if (_selectedUserType == 'patient') {
+          print("Login successful");
+          Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+          String patientId = jsonResponse['patient_id'].toString();
 
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      userProvider.setUser(UserModel(id: patientId));
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (context) => Dashboard()));
+          final userProvider =
+              Provider.of<UserProvider>(context, listen: false);
+          userProvider.setUser(UserModel(id: patientId));
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (context) => Dashboard()));
+        } else if (_selectedUserType == 'doctor' ||
+            _selectedUserType == 'institution') {
+          print("Unlucky you, you are not a patient");
+        }
+      }
     } else {
       print("Login failed");
     }
@@ -49,6 +62,10 @@ class _LoginState extends State<Login> {
       child: Consumer<MetaMaskProvider>(
         builder: (context, provider, child) {
           late final Widget connectButton;
+          bool isPatient = _selectedUserType == 'patient';
+          bool showConnectButton =
+              !provider.isConnected || !provider.isInOperatingChain;
+
           if (provider.isConnected && provider.isInOperatingChain) {
             connectButton = Text(
               'Connected to ${provider.currentAddress}',
@@ -81,6 +98,7 @@ class _LoginState extends State<Login> {
               style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
             );
           }
+
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -93,7 +111,22 @@ class _LoginState extends State<Login> {
                 decoration: const InputDecoration(labelText: 'Password'),
                 obscureText: true,
               ),
-              connectButton,
+              DropdownButton<String>(
+                value: _selectedUserType,
+                items: <String>['institution', 'doctor', 'patient']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _selectedUserType = newValue!;
+                  });
+                },
+              ),
+              if (isPatient && showConnectButton) connectButton,
               ElevatedButton(
                 onPressed: () => _sendDataToBackend(context),
                 child: Text('Login'),
