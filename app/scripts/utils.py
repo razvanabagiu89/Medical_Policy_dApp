@@ -8,6 +8,7 @@ from solcx import compile_source, install_solc
 import boto3
 import json
 
+
 def connect_to_web3_address(address):
     web3 = Web3(Web3.HTTPProvider(address))
     return web3
@@ -17,6 +18,7 @@ def load_yaml_file(file):
     with open(file, "r") as stream:
         yaml_file = safe_load(stream)
     return yaml_file
+
 
 ########################################## App ##########################################
 
@@ -90,10 +92,12 @@ def get_patient_count(patient_registry_contract):
     patient_count = patient_registry_contract.functions.patientCount().call()
     return patient_count
 
+
 # deprecated - used only in tests
 def compute_hash(filename):
     file_hash = bytes.fromhex(sha256(filename.encode("utf-8")).hexdigest())
     return file_hash
+
 
 # deprecated - used only in tests
 def add_medical_record_to_patient(
@@ -109,11 +113,7 @@ def add_medical_record_to_patient(
 class WalletAddressAlreadyExists(Exception):
     pass
 
-#TODO
-# 1. check if this wallet address already exists for this patient
-# 2. if not, issue tx in fe
-# 3. if yes, just send back error message
-# 4. call it check_wallet_exists()
+
 # deprecated - used only in tests
 def add_wallet_to_patient(
     patient_registry_contract,
@@ -137,6 +137,20 @@ def add_wallet_to_patient(
         )
 
 
+def check_wallet_exists(
+    patient_registry_contract,
+    new_patient_address,
+    patient_id,
+):
+    current_patient_addresses = get_patient_addresses(
+        patient_registry_contract, patient_id
+    )
+    if new_patient_address in current_patient_addresses:
+        raise WalletAddressAlreadyExists(
+            "The new wallet address already exists for this patient."
+        )
+
+
 ########################################## AccessPolicyContract ##########################################
 
 
@@ -147,6 +161,7 @@ def string_to_bytes32(input_string: str):
 def hex_to_bytes32(input_string: str):
     return Web3.to_bytes(hexstr=input_string).ljust(32, b"\0")
 
+
 # onlyOwner
 def create_policies(access_policy_contract, patient_address, web3_instance):
     tx_hash = access_policy_contract.functions.createPolicies(patient_address).transact(
@@ -154,6 +169,7 @@ def create_policies(access_policy_contract, patient_address, web3_instance):
     )
     tx_receipt = web3_instance.eth.wait_for_transaction_receipt(tx_hash)
     return tx_receipt
+
 
 # deprecated - used only in tests
 def grant_access(
@@ -168,6 +184,7 @@ def grant_access(
     ).transact({"from": patient_address})
     tx_receipt = web3_instance.eth.wait_for_transaction_receipt(tx_hash)
     return tx_receipt
+
 
 # deprecated - used only in tests
 def revoke_access(
@@ -257,9 +274,17 @@ def get_contract(web3, contract_name, contract_address):
 
         return contract
 
+
 def upload_file_to_s3(request, medical_record_hash):
-    s3_client = boto3.client("s3", region_name=s3_region, aws_access_key_id=s3_access_key, aws_secret_access_key=s3_secret_key)
+    s3_client = boto3.client(
+        "s3",
+        region_name=s3_region,
+        aws_access_key_id=s3_access_key,
+        aws_secret_access_key=s3_secret_key,
+    )
     bucket_name = s3_bucket_name
     file_key = f"medical_records/{medical_record_hash}.pdf"
-    file_content = request.files["file"].read()  # Assumes the file is sent as a multipart form-data field named "file"
+    file_content = request.files[
+        "file"
+    ].read()  # Assumes the file is sent as a multipart form-data field named "file"
     s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=file_content)

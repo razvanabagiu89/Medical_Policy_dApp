@@ -6,6 +6,7 @@ import 'add_mr.dart';
 import 'grant.dart';
 import 'revoke.dart';
 import 'show_access.dart';
+import 'add_wallet.dart';
 
 class Dashboard extends StatelessWidget {
   @override
@@ -69,7 +70,12 @@ class Dashboard extends StatelessWidget {
             ),
             const SizedBox(height: 12.0),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AddWallet()),
+                );
+              },
               child: const Text('Add Wallet'),
             ),
           ],

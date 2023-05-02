@@ -200,9 +200,7 @@ def add_wallet(patient_id):
     patient_id = int(patient_id)
     patient = entities.find_one({"ID": patient_id})
     if patient:
-        patient_address = request.json["patient_address"]
         new_patient_address = request.json["new_patient_address"]
-        patient_address_converted = Web3.to_checksum_address(patient_address)
         new_patient_address_converted = Web3.to_checksum_address(new_patient_address)
         # db
         entities.update_one(
@@ -211,12 +209,10 @@ def add_wallet(patient_id):
         )
         # blockchain
         try:
-            add_wallet_to_patient(
+            check_wallet_exists(
                 patient_registry_contract,
-                patient_address_converted,
                 new_patient_address_converted,
                 patient_id,
-                web3,
             )
             create_policies(access_policy_contract, new_patient_address_converted, web3)
             print("Wallet and policy added to patient with ID:", patient_id)
