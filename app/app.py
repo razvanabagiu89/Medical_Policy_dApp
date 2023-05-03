@@ -156,12 +156,12 @@ def remove_institution():
         )
 
 
-@app.route("/api/<institution_CIF>/doctor", methods=["POST"])
+@app.route("/api/<institution_CIF>/doctor/add", methods=["POST"])
 def add_doctor(institution_CIF):
     doctor_username = request.json["username"]
-    doctor_password = request.json["password"]
+    doctor_password = "".join(random.choice(string.ascii_letters) for i in range(8))
     doctor_full_name = request.json["full_name"]
-    doctor_id = institution_CIF + str(randint(0, 5))
+    doctor_id = institution_CIF + str(randint(0, 20))
 
     try:
         institution = entities.find_one({"ID": institution_CIF, "type": "institution"})
@@ -180,7 +180,16 @@ def add_doctor(institution_CIF):
             }
         )
         print("Doctor inserted with ID:", doctor_id)
-        return jsonify({"status": "success", "doctor_id": doctor_id}), 201
+        return (
+            jsonify(
+                {
+                    "status": "success",
+                    "doctor_id": doctor_id,
+                    "password": doctor_password,
+                }
+            ),
+            201,
+        )
     except errors.DuplicateKeyError:
         print("Error: A doctor with this ID already exists.")
         return (
@@ -197,11 +206,33 @@ def add_doctor(institution_CIF):
         return jsonify({"status": "error", "message": str(e)}), 400
 
 
+@app.route("/api/<institution_CIF>/doctor/remove", methods=["POST"])
+def remove_doctor(institution_CIF):
+    doctor_username = request.json["username"]
+    try:
+        # db
+        entities.delete_one({"username": doctor_username, "type": "doctor"})
+        print("doctor deleted:", doctor_username)
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        print(f"Error: {e}")
+        return (
+            jsonify(
+                {
+                    "status": "error",
+                    "message": "Error in backend: mongodb could not delete doctor.",
+                }
+            ),
+            400,
+        )
+
+
 @app.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json()
     username = data.get("username")
     password = data.get("password")
+    type = data.get("type")
 
     if not username or not password:
         return (
@@ -209,7 +240,7 @@ def login():
             400,
         )
 
-    user = entities.find_one({"username": username})
+    user = entities.find_one({"username": username, "type": type})
 
     if not user or not user["password"] == password:
         return (
@@ -222,7 +253,7 @@ def login():
             {
                 "status": "success",
                 "message": "Login successful",
-                "patient_id": user["ID"],
+                "id": user["ID"],
             }
         ),
         200,

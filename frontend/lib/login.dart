@@ -7,6 +7,7 @@ import 'dashboard.dart';
 import 'user_model.dart';
 import 'user_provider.dart';
 import 'admin_dashboard.dart';
+import 'institution_dashboard.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -22,33 +23,49 @@ class _LoginState extends State<Login> {
     final String username = _usernameController.text;
     final String password = _passwordController.text;
 
-    final response = await http.post(
-      Uri.parse('http://127.0.0.1:5000/api/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'username': username,
-        'password': password,
-      }),
-    );
+    var response;
+    if (username == 'admin') {
+      response = await http.post(
+        Uri.parse('http://127.0.0.1:5000/api/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'username': username,
+          'password': password,
+        }),
+      );
+    } else {
+      response = await http.post(
+        Uri.parse('http://127.0.0.1:5000/api/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'username': username,
+          'password': password,
+          'type': _selectedUserType,
+        }),
+      );
+    }
 
     if (response.statusCode == 200) {
       if (username == 'admin') {
         Navigator.of(context)
             .push(MaterialPageRoute(builder: (context) => AdminDashboard()));
       } else {
-        if (_selectedUserType == 'patient') {
-          print("Login successful");
-          Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-          String patientId = jsonResponse['patient_id'].toString();
+        Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        String id = jsonResponse['id'].toString();
 
-          final userProvider =
-              Provider.of<UserProvider>(context, listen: false);
-          userProvider.setUser(UserModel(id: patientId));
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        userProvider.setUser(UserModel(id: id));
+
+        if (_selectedUserType == 'patient') {
+          print("Patient login successful");
           Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => Dashboard()));
-        } else if (_selectedUserType == 'doctor' ||
-            _selectedUserType == 'institution') {
-          print("Unlucky you, you are not a patient");
+        } else if (_selectedUserType == 'institution') {
+          print("institution login successful");
+          Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => InstitutionDashboard()));
+        } else if (_selectedUserType == 'doctor') {
+          print("doctor login successful");
         }
       }
     } else {

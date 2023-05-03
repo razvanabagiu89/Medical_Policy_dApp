@@ -56,6 +56,7 @@ with the blockchain if the patient has granted access to the doctor
 
 
 minor:
+- only access from fe (cors)
 - if db fails dont move to blockchain steps and reverse too
 - review all variables and functions names to be consistent across:
     - db
