@@ -10,6 +10,7 @@ import 'package:http/http.dart';
 import 'package:flutter_web3/flutter_web3.dart';
 import 'package:crypto/crypto.dart';
 import 'package:yaml/yaml.dart';
+import 'package:http/http.dart' as http;
 
 String patientRegistryContractJsonPath =
     'contracts/PatientRegistryContract.json';
@@ -83,9 +84,23 @@ Uint8List hexStringToUint8List(String hexString) {
   return Uint8List.fromList(intList);
 }
 
-// not tested
-String bytes32HexToString(Uint8List bytes32) {
-  final hexString = HEX.encode(bytes32);
-  final codeUnits = hexString.codeUnits;
-  return String.fromCharCodes(codeUnits);
+Future<List<String>> fetchMedicalHashes(doctor_id) async {
+  final url = 'http://localhost:5000/api/doctor/$doctor_id/show_documents';
+  final response = await http.get(
+    Uri.parse(url),
+    headers: <String, String>{
+      'Content-Type': 'application/json',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+    List<dynamic> accessToList = jsonResponse['access_to'];
+    List<String> medicalHashes =
+        accessToList.map((hash) => hash.toString()).toList();
+    print(medicalHashes);
+    return medicalHashes;
+  } else {
+    throw Exception('Failed to load medical hashes');
+  }
 }

@@ -436,5 +436,62 @@ def revoke_access_to_medical_record(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
+@app.route("/api/doctor/<doctor_id>/request_access", methods=["POST"])
+def request_access(doctor_id):
+    # doctor_id = int(doctor_id) not int
+    doctor = entities.find_one({"ID": doctor_id})
+
+    if doctor:
+        patient_username = request.json["patient_username"]
+        file_hash = request.json["file_hash"]
+        try:
+            # db
+            patient = entities.find_one(
+                {"username": patient_username, "type": "patient"}
+            )
+            if patient:
+                new_request = {
+                    "from": doctor["full_name"],
+                    "ID": doctor["ID"],
+                    "belongs_to": doctor["belongs_to"],
+                    "document": file_hash,
+                }
+                entities.update_one(
+                    {"username": patient_username, "type": "patient"},
+                    {"$push": {"requests": new_request}},
+                )
+            else:
+                return (
+                    jsonify({"status": "error", "message": "Patient not found."}),
+                    404,
+                )
+            return jsonify({"status": "success", "message": "Request sent"}), 200
+        except Exception as e:
+            return jsonify({"status": "error", "message": str(e)}), 400
+    else:
+        return jsonify({"status": "error", "message": "Doctor not found."}), 404
+
+
+@app.route("/api/doctor/<doctor_id>/show_documents", methods=["GET"])
+def show_documents(doctor_id):
+    try:
+        # db
+        doctor = entities.find_one({"ID": doctor_id, "type": "doctor"})
+        if doctor:
+            access_to_list = doctor.get("access_to", [])
+            return jsonify({"status": "success", "access_to": access_to_list}), 200
+        else:
+            return (
+                jsonify({"status": "error", "message": "Doctor not found."}),
+                404,
+            )
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 400
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
 if __name__ == "__main__":
     app.run(debug=True)

@@ -8,6 +8,7 @@ import 'user_model.dart';
 import 'user_provider.dart';
 import 'admin_dashboard.dart';
 import 'institution_dashboard.dart';
+import 'doctor_dashboard.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -61,11 +62,13 @@ class _LoginState extends State<Login> {
           Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => Dashboard()));
         } else if (_selectedUserType == 'institution') {
-          print("institution login successful");
+          print("Institution login successful");
           Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => InstitutionDashboard()));
         } else if (_selectedUserType == 'doctor') {
-          print("doctor login successful");
+          print("Doctor login successful");
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (context) => DoctorDashboard()));
         }
       }
     } else {
