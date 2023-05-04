@@ -5,6 +5,8 @@ from web3 import Web3, exceptions
 from scripts.utils import *
 import string
 import random
+import base64
+from io import BytesIO
 
 app = Flask(__name__)
 CORS(app)
@@ -15,6 +17,13 @@ client = MongoClient(mongodb_host)
 db = client[db_name]
 entities = db[entities]
 entities.create_index([("ID", ASCENDING)], unique=True)
+
+s3 = boto3.client(
+    "s3",
+    region_name=s3_region,
+    aws_access_key_id=s3_access_key,
+    aws_secret_access_key=s3_secret_key,
+)
 
 """
 used just for read-only txs (getters) and admin calls (add_patient, create_policies)
@@ -326,11 +335,12 @@ def add_medical_record(patient_id):
     patient = entities.find_one({"ID": patient_id})
 
     if patient:
-        patient_address = request.json["patient_address"]
         filedata = request.json["filedata"]
-        # TODO: filedata up to s3
+        decoded_filedata = base64.b64decode(filedata)
+        file_like_object = BytesIO(decoded_filedata)
         medical_record_hash = request.json["medical_record_hash"]
-        # upload_file_to_s3(request, medical_record_hash)
+        # s3
+        upload_file_to_s3(file_like_object, medical_record_hash, s3)
         # db
         entities.update_one(
             {"ID": patient_id},
@@ -489,8 +499,22 @@ def show_documents(doctor_id):
         return jsonify({"status": "error", "message": str(e)}), 400
 
 
-if __name__ == "__main__":
-    app.run(debug=True)
+@app.route("/api/get_file/<file_name>")
+def get_pdf(file_name):
+    s3 = boto3.client(
+        "s3",
+        region_name=s3_region,
+        aws_access_key_id=s3_access_key,
+        aws_secret_access_key=s3_secret_key,
+    )
+    bucket_name = s3_bucket_name
+
+    response = s3.get_object(Bucket=bucket_name, Key=file_name)
+    file_data = response["Body"].read()
+
+    file_base64 = base64.b64encode(file_data).decode("utf-8")
+
+    return jsonify({"filedata": file_base64})
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ import 'package:flutter_web3/flutter_web3.dart';
 import 'utils.dart';
 import 'package:hex/hex.dart';
 import 'dart:typed_data';
+import 'display_document.dart';
 
 class ShowDocuments extends StatefulWidget {
   final Future<List<String>> futureMedicalHashes;
@@ -36,8 +37,12 @@ class _ShowDocumentsState extends State<ShowDocuments> {
                   return ListTile(
                     title: Text(medicalHash),
                     trailing: ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         // Add your logic here for handling the "See" button press
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) =>
+                              DisplayDocument(medicalHash: medicalHash),
+                        ));
                       },
                       child: Text('See'),
                     ),

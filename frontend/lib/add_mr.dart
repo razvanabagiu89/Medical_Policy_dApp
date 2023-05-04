@@ -12,7 +12,6 @@ class AddMedicalRecord extends StatelessWidget {
   const AddMedicalRecord({Key? key}) : super(key: key);
 
   Future<void> _sendDataToBackend(BuildContext context) async {
-    final patientAddress = context.read<MetaMaskProvider>().currentAddress;
     final userModel = context.read<UserProvider>();
     final patientId = userModel.getUserID();
 
@@ -39,7 +38,6 @@ class AddMedicalRecord extends StatelessWidget {
       final fileData = base64Encode(fileBytes);
       final requestBody = jsonEncode({
         'patient_id': patientId,
-        'patient_address': patientAddress,
         'filename': fileName,
         'filedata': fileData,
         'medical_record_hash': medicalRecordHash,

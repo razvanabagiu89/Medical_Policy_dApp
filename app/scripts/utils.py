@@ -7,7 +7,7 @@ import os
 from solcx import compile_source, install_solc
 import boto3
 import json
-import shutil;
+import shutil
 
 
 def connect_to_web3_address(address):
@@ -18,7 +18,7 @@ def connect_to_web3_address(address):
 def load_yaml_file(file):
     with open(file, "r") as stream:
         yaml_file = safe_load(stream)
-    if file == 'app_config.yaml':
+    if file == "app_config.yaml":
         shutil.copyfile(file, "../frontend/assets/" + file)
     return yaml_file
 
@@ -278,16 +278,12 @@ def get_contract(web3, contract_name, contract_address):
         return contract
 
 
-def upload_file_to_s3(request, medical_record_hash):
-    s3_client = boto3.client(
-        "s3",
-        region_name=s3_region,
-        aws_access_key_id=s3_access_key,
-        aws_secret_access_key=s3_secret_key,
-    )
-    bucket_name = s3_bucket_name
-    file_key = f"medical_records/{medical_record_hash}.pdf"
-    file_content = request.files[
-        "file"
-    ].read()  # Assumes the file is sent as a multipart form-data field named "file"
-    s3_client.put_object(Bucket=bucket_name, Key=file_key, Body=file_content)
+def upload_file_to_s3(file, filename, s3_client):
+    try:
+        s3_client.upload_fileobj(
+            file, s3_bucket_name, filename, ExtraArgs={"ContentType": "application/pdf"}
+        )
+    except Exception as e:
+        return str(e)
+
+    return f"{filename} uploaded successfully"
