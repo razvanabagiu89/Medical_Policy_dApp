@@ -287,3 +287,12 @@ def upload_file_to_s3(file, filename, s3_client):
         return str(e)
 
     return f"{filename} uploaded successfully"
+
+
+def delete_file_from_s3(filename, s3_client):
+    try:
+        s3_client.delete_object(Bucket=s3_bucket_name, Key=filename)
+    except Exception as e:
+        return str(e)
+
+    return f"{filename} deleted successfully"

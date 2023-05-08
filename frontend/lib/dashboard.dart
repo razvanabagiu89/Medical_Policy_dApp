@@ -7,6 +7,8 @@ import 'grant.dart';
 import 'revoke.dart';
 import 'show_access.dart';
 import 'add_wallet.dart';
+import 'requests_page.dart';
+import 'delete_mr.dart';
 
 class Dashboard extends StatelessWidget {
   @override
@@ -41,6 +43,16 @@ class Dashboard extends StatelessWidget {
                         builder: (context) => AddMedicalRecord()));
               },
               child: const Text('Add Medical Record'),
+            ),
+            const SizedBox(height: 24.0),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => DeleteMedicalRecord()));
+              },
+              child: const Text('Delete Medical Record'),
             ),
             const SizedBox(height: 12.0),
             ElevatedButton(
@@ -77,6 +89,16 @@ class Dashboard extends StatelessWidget {
                 );
               },
               child: const Text('Add Wallet'),
+            ),
+            const SizedBox(height: 12.0),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => RequestsPage()),
+                );
+              },
+              child: const Text('Received Requests'),
             ),
           ],
         ),

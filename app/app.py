@@ -356,6 +356,30 @@ def add_medical_record(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
+@app.route("/api/patient/<patient_id>/delete_medical_record", methods=["POST"])
+def delete_medical_record(patient_id):
+    patient_id = int(request.json["patient_id"])
+    patient = entities.find_one({"ID": patient_id, "type": "patient"})
+
+    if patient:
+        medical_record_hash = request.json["medical_record_hash"]
+        # s3
+        delete_file_from_s3(medical_record_hash, s3)
+        # db
+        entities.update_one(
+            {"ID": patient_id},
+            {"$pull": {"medical_records_hashes": medical_record_hash}},
+        )
+        print("Medical record deleted to patient with ID:", patient_id)
+        return (
+            jsonify({"status": "success"}),
+            201,
+        )
+    else:
+        print("Error: Patient not found.")
+        return jsonify({"status": "error", "message": "Patient not found."}), 404
+
+
 @app.route("/api/patient/<int:patient_id>/all_policies", methods=["GET"])
 def get_all_policies_for_patient(patient_id):
     patient = entities.find_one({"ID": patient_id, "type": "patient"})
@@ -515,6 +539,18 @@ def get_pdf(file_name):
     file_base64 = base64.b64encode(file_data).decode("utf-8")
 
     return jsonify({"filedata": file_base64})
+
+
+@app.route("/api/patient/<int:patient_id>/requests", methods=["GET"])
+def get_requests(patient_id):
+    patient_id = int(patient_id)
+    patient = entities.find_one({"ID": patient_id, "type": "patient"})
+
+    if patient:
+        requests = patient["requests"]
+        return jsonify({"status": "success", "requests": requests}), 200
+    else:
+        return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
 if __name__ == "__main__":

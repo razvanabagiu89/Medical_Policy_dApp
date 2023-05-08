@@ -41,10 +41,9 @@ each wallet is unique in patient's wallet list
 each institution is uniquely identified by his CIF (input)
 
 #### todo:
+- password hash in db
 - more utils funcs
-- remove medical record
 - remove wallet
-- add wallet (+ add policy inside - 2 tx's)
 - duplicate checks for creations, adding etc. - involve http request from frontend to backend
 - involve S3 for MR:
   - doctor access patient's MR from his access_to list and sends request to backend which will check
