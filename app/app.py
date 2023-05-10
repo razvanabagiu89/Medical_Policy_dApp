@@ -116,16 +116,16 @@ def add_institution():
             {
                 "username": institution_username,
                 "password": institution_password,
-                "CIF": int(institution_CIF),
+                "ID": int(institution_CIF),
                 "type": "institution",
             }
         )
-        print("Institution inserted with CIF:", institution_CIF)
+        print("Institution inserted with ID:", institution_CIF)
         return (
             jsonify(
                 {
                     "status": "success",
-                    "CIF": institution_CIF,
+                    "ID": institution_CIF,
                     "password": institution_password,
                 }
             ),
@@ -167,10 +167,11 @@ def remove_institution():
 
 @app.route("/api/<institution_CIF>/doctor/add", methods=["POST"])
 def add_doctor(institution_CIF):
+    institution_CIF = int(institution_CIF)
     doctor_username = request.json["username"]
     doctor_password = "".join(random.choice(string.ascii_letters) for i in range(8))
     doctor_full_name = request.json["full_name"]
-    doctor_id = institution_CIF + str(randint(0, 20))
+    doctor_id = str(institution_CIF) + str(randint(0, 20))
 
     try:
         institution = entities.find_one({"ID": institution_CIF, "type": "institution"})

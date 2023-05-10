@@ -28,7 +28,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       }),
     );
 
-    if (response.statusCode == 200) {
+    if (response.statusCode == 201) {
       Map<String, dynamic> jsonResponse = jsonDecode(response.body);
       String institutionPassword = jsonResponse['password'].toString();
       print(institutionPassword);
