@@ -12,7 +12,8 @@ contract AccessPolicyContract is Ownable {
 
     struct PatientPolicies {
         address owner;
-        mapping(bytes32 => AccessPolicy) policies; // (hash of medical record => AccessPolicy)
+        // format: mapping(medical_record_hash => AccessPolicy)
+        mapping(bytes32 => AccessPolicy) policies;
     }
 
     mapping(address => PatientPolicies) public allPatientPolicies;
@@ -58,7 +59,6 @@ contract AccessPolicyContract is Ownable {
             .institutionIDToAllowed[institutionID] = false;
     }
 
-    // Getter functions
     function getPatientOwner(
         address patient_address
     ) public view returns (address) {

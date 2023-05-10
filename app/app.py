@@ -7,6 +7,7 @@ import string
 import random
 import base64
 from io import BytesIO
+import boto3
 
 app = Flask(__name__)
 CORS(app)
@@ -38,7 +39,6 @@ access_policy_contract = get_contract(
 )
 
 
-# called just by admin - Ownable.sol modifier
 @app.route("/api/patient", methods=["POST"])
 def add_patient():
     patient_username = request.json["username"]
@@ -393,11 +393,9 @@ def get_all_policies_for_patient(patient_id):
                 doctor_ids = get_patient_policy_allowed_by_medical_record_hash(
                     access_policy_contract,
                     wallet,
-                    hex_to_bytes32(
-                        file_hash
-                    ),  # for solidity convert hex strings to bytes32
+                    hex_to_bytes32(file_hash),  # convert hex strings to bytes32
                 )
-                # convert bytes to string again
+                # convert bytes to string
                 doctor_ids_str = [
                     Web3.to_text(doctor_id_bytes).rstrip("\x00")
                     for doctor_id_bytes in doctor_ids
@@ -472,7 +470,6 @@ def revoke_access_to_medical_record(patient_id):
 
 @app.route("/api/doctor/<doctor_id>/request_access", methods=["POST"])
 def request_access(doctor_id):
-    # doctor_id = int(doctor_id) not int
     doctor = entities.find_one({"ID": doctor_id})
 
     if doctor:

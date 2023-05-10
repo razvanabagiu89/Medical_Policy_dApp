@@ -5,7 +5,6 @@ from hashlib import sha256
 from dotenv import load_dotenv
 import os
 from solcx import compile_source, install_solc
-import boto3
 import json
 import shutil
 
@@ -23,7 +22,7 @@ def load_yaml_file(file):
     return yaml_file
 
 
-########################################## App ##########################################
+########################################## App variables ##########################################
 
 load_dotenv(".env")
 admin_address = os.environ.get("ADMIN_ADDRESS")
@@ -51,7 +50,7 @@ mongodb_host = app_config["mongodb"]["host"]
 db_name = app_config["mongodb"]["db_name"]
 entities = app_config["mongodb"]["entities_collection"]
 
-########################################## Testing Smart Contracts ##########################################
+########################################## Smart Contracts testing variables ##########################################
 
 test_file = load_yaml_file("tests/test_config.yaml")
 admin_address = test_file["admin"]["address"]
@@ -113,6 +112,7 @@ def add_medical_record_to_patient(
     return tx_receipt
 
 
+# deprecated - used only in tests
 class WalletAddressAlreadyExists(Exception):
     pass
 
@@ -165,7 +165,6 @@ def hex_to_bytes32(input_string: str):
     return Web3.to_bytes(hexstr=input_string).ljust(32, b"\0")
 
 
-# onlyOwner
 def create_policies(access_policy_contract, patient_address, web3_instance):
     tx_hash = access_policy_contract.functions.createPolicies(patient_address).transact(
         {"from": admin_address}
@@ -223,6 +222,7 @@ def get_patient_owner(access_policy_contract, patient_address):
 
 
 def deploy(web3, contract_name):
+    # uncomment if solc is not installed
     # install_solc('0.8.0')
 
     with open(f"contracts/{contract_name}.sol", "r") as file:
@@ -268,7 +268,6 @@ def get_contract(web3, contract_name, contract_address):
         contract_interface = compiled_contract[f"<stdin>:{contract_name}"]
         abi = contract_interface["abi"]
         abi_json = json.dumps(abi)
-        # abi2 = ''.join(abi)
         f = open(f"../frontend/contracts/{contract_name}.abi", "w+")
         f.write(abi_json)
         f.close()
