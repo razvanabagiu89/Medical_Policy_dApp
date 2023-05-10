@@ -6,8 +6,6 @@ import 'metamask_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_web3/flutter_web3.dart';
 import 'utils.dart';
-import 'package:hex/hex.dart';
-import 'dart:typed_data';
 
 class GrantAccess extends StatefulWidget {
   @override
@@ -17,7 +15,6 @@ class GrantAccess extends StatefulWidget {
 class _GrantAccessState extends State<GrantAccess> {
   final _formKey = GlobalKey<FormState>();
   String _doctorId = '';
-  // hex string
   String _fileHash = '';
 
   Future<void> grantAccess(BuildContext context) async {

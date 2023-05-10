@@ -1,12 +1,9 @@
 library utils;
 
 import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:hex/hex.dart';
 
 import 'package:flutter/services.dart';
-import 'package:http/http.dart';
 import 'package:flutter_web3/flutter_web3.dart';
 import 'package:crypto/crypto.dart';
 import 'package:yaml/yaml.dart';
@@ -98,7 +95,6 @@ Future<List<String>> fetchMedicalHashes(doctor_id) async {
     List<dynamic> accessToList = jsonResponse['access_to'];
     List<String> medicalHashes =
         accessToList.map((hash) => hash.toString()).toList();
-    print(medicalHashes);
     return medicalHashes;
   } else {
     throw Exception('Failed to load medical hashes');

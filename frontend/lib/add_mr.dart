@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'user_provider.dart';
-import 'metamask_provider.dart';
 import 'utils.dart';
 import 'package:flutter_web3/flutter_web3.dart';
 
@@ -33,8 +32,6 @@ class AddMedicalRecord extends StatelessWidget {
           .send('addMedicalRecord', [patientId, medicalRecordBytes32]);
       await tx.wait();
       ////////////////////////// backend //////////////////////////
-
-      // convert file data to base64 string
       final fileData = base64Encode(fileBytes);
       final requestBody = jsonEncode({
         'patient_id': patientId,

@@ -1,7 +1,6 @@
 import 'metamask_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_web3/flutter_web3.dart';
 import 'add_mr.dart';
 import 'grant.dart';
 import 'revoke.dart';

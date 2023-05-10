@@ -1,13 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'user_provider.dart';
-import 'metamask_provider.dart';
-import 'package:provider/provider.dart';
-import 'package:flutter_web3/flutter_web3.dart';
-import 'utils.dart';
-import 'package:hex/hex.dart';
-import 'dart:typed_data';
 import 'display_document.dart';
 
 class ShowDocuments extends StatefulWidget {
@@ -29,7 +20,7 @@ class _ShowDocumentsState extends State<ShowDocuments> {
           future: widget.futureMedicalHashes,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
-              // Render the list of documents with buttons
+              // render the list of documents with buttons
               return ListView.builder(
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, index) {
@@ -38,7 +29,6 @@ class _ShowDocumentsState extends State<ShowDocuments> {
                     title: Text(medicalHash),
                     trailing: ElevatedButton(
                       onPressed: () async {
-                        // Add your logic here for handling the "See" button press
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) =>
                               DisplayDocument(medicalHash: medicalHash),
@@ -52,8 +42,6 @@ class _ShowDocumentsState extends State<ShowDocuments> {
             } else if (snapshot.hasError) {
               return Text('${snapshot.error}');
             }
-
-            // Show a loading spinner while waiting for the data
             return CircularProgressIndicator();
           },
         ),

@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'user_provider.dart';
-import 'metamask_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_web3/flutter_web3.dart';
-import 'utils.dart';
-import "package:hex/hex.dart";
 
 class DeleteMedicalRecord extends StatefulWidget {
   @override
@@ -15,7 +11,6 @@ class DeleteMedicalRecord extends StatefulWidget {
 
 class DeleteMedicalRecordState extends State<DeleteMedicalRecord> {
   final _formKey = GlobalKey<FormState>();
-  // hex string
   String _fileHash = '';
 
   Future<void> deleteMedicalRecord(BuildContext context) async {

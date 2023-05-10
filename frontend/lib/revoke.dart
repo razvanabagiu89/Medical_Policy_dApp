@@ -6,7 +6,6 @@ import 'metamask_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_web3/flutter_web3.dart';
 import 'utils.dart';
-import "package:hex/hex.dart";
 
 class RevokeAccess extends StatefulWidget {
   @override
@@ -16,7 +15,6 @@ class RevokeAccess extends StatefulWidget {
 class _RevokeAccessState extends State<RevokeAccess> {
   final _formKey = GlobalKey<FormState>();
   String _doctorId = '';
-  // hex string
   String _fileHash = '';
 
   Future<void> revokeAccess(BuildContext context) async {

@@ -3,10 +3,7 @@ import 'package:frontend/admin_dashboard.dart';
 import 'metamask_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'login_and_registration.dart';
-import 'user_model.dart';
 import 'user_provider.dart';
 import 'utils.dart';
 

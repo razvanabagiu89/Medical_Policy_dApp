@@ -2,18 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'user_provider.dart';
-import 'metamask_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_web3/flutter_web3.dart';
 import 'utils.dart';
-import 'package:hex/hex.dart';
-import 'dart:typed_data';
 
-/*
-user logins
-sets his new wallet to get authorized 
-otherwise he cant perform any actions
-*/
 class AddWallet extends StatefulWidget {
   @override
   AddWalletState createState() => AddWalletState();
@@ -27,7 +19,7 @@ class AddWalletState extends State<AddWallet> {
     final userModel = context.read<UserProvider>();
     final patientId = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
-    // see if this wallet is already authorized
+    // check if this wallet is already authorized
     final url = 'http://localhost:5000/api/patient/$patientId/wallet';
     final response = await http.post(
       Uri.parse(url),
