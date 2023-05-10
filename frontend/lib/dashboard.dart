@@ -44,7 +44,7 @@ class Dashboard extends StatelessWidget {
               },
               child: const Text('Add Medical Record'),
             ),
-            const SizedBox(height: 24.0),
+            const SizedBox(height: 12.0),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(

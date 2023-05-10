@@ -1,5 +1,3 @@
-// login_and_registration.dart
-
 import 'package:flutter/material.dart';
 import 'login.dart';
 import 'registration.dart';

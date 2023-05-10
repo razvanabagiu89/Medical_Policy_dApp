@@ -1,3 +1,5 @@
+import 'package:frontend/admin_dashboard.dart';
+
 import 'metamask_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +30,9 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'My App',
         home: LoginAndRegistration(),
+        routes: {
+          '/admin': (context) => AdminDashboard(),
+        },
       ),
     );
   }
