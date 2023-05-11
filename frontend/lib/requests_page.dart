@@ -52,7 +52,8 @@ class _RequestsPageState extends State<RequestsPage> {
                         Text('ID: ${snapshot.data![index]['ID']}'),
                         Text(
                             'Belongs to: ${snapshot.data![index]['belongs_to']}'),
-                        Text('Document: ${snapshot.data![index]['document']}'),
+                        SelectableText(
+                            'Document: ${snapshot.data![index]['document']}'),
                       ],
                     ),
                   );

@@ -22,28 +22,12 @@ or
 
 5. python3 app.py
 
-
-#### obs:
-- blockchain:
-  
-    when adding a patient:
-    - patientID will be generated unique
-    - his address must be unique. why? because of policy creation
-
-each patient is uniquely identified by his ID - correlated in the db too
-each policy is uniquely identified by its wallet
-each wallet is unique in patient's wallet list
-
-
-- db:
-each patient is uniquely identified by his ID (random)
-each wallet is unique in patient's wallet list
-each institution is uniquely identified by his CIF (input)
-
 #### todo:
+- register on patient (fe) to force also connecting the wallet
 - password hash in db
-- more utils funcs
 - duplicate checks for creations, adding etc. - involve http request from frontend to backend
+- doctor/other as for insurance companies
+- routes
 
 
 minor:
