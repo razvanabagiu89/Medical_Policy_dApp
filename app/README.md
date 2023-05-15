@@ -21,21 +21,3 @@ or
 4. export PYTHONPATH="$PWD"
 
 5. python3 app.py
-
-#### todo:
-- register on patient (fe) to force also connecting the wallet
-- password hash in db
-- duplicate checks for creations, adding etc. - involve http request from frontend to backend
-- doctor/other as for insurance companies
-- routes
-
-
-minor:
-- only access from fe (cors)
-- if db fails dont move to blockchain steps and reverse too
-- review all variables and functions names to be consistent across:
-    - db
-    - blockchain
-    - backend
-    - testing
-    - frontend

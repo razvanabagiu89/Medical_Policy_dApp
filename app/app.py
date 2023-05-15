@@ -8,6 +8,7 @@ import random
 import base64
 from io import BytesIO
 import boto3
+import hashlib
 
 app = Flask(__name__)
 CORS(app)
@@ -108,6 +109,9 @@ def add_institution():
     institution_password = "".join(
         random.choice(string.ascii_letters) for i in range(8)
     )
+    institution_password_hash = str(
+        hashlib.sha256(institution_password.encode()).hexdigest()
+    )
     institution_CIF = request.json["CIF"]
 
     try:
@@ -115,7 +119,7 @@ def add_institution():
         entities.insert_one(
             {
                 "username": institution_username,
-                "password": institution_password,
+                "password": institution_password_hash,
                 "ID": int(institution_CIF),
                 "type": "institution",
             }
@@ -170,6 +174,7 @@ def add_doctor(institution_CIF):
     institution_CIF = int(institution_CIF)
     doctor_username = request.json["username"]
     doctor_password = "".join(random.choice(string.ascii_letters) for i in range(8))
+    doctor_password_hash = str(hashlib.sha256(doctor_password.encode()).hexdigest())
     doctor_full_name = request.json["full_name"]
     doctor_id = str(institution_CIF) + str(randint(0, 20))
 
@@ -181,7 +186,7 @@ def add_doctor(institution_CIF):
         entities.insert_one(
             {
                 "username": doctor_username,
-                "password": doctor_password,
+                "password": doctor_password_hash,
                 "full_name": doctor_full_name,
                 "ID": doctor_id,
                 "type": "doctor",

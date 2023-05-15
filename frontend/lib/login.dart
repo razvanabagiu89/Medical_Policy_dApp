@@ -9,6 +9,7 @@ import 'user_provider.dart';
 import 'admin_dashboard.dart';
 import 'institution_dashboard.dart';
 import 'doctor_dashboard.dart';
+import 'package:crypto/crypto.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -23,6 +24,7 @@ class _LoginState extends State<Login> {
   Future<void> _sendDataToBackend(BuildContext context) async {
     final String username = _usernameController.text;
     final String password = _passwordController.text;
+    var passwordHash = sha256.convert(utf8.encode(password)).toString();
 
     var response;
     if (username == 'admin') {
@@ -31,7 +33,7 @@ class _LoginState extends State<Login> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': username,
-          'password': password,
+          'password': passwordHash,
         }),
       );
     } else {
@@ -40,7 +42,7 @@ class _LoginState extends State<Login> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': username,
-          'password': password,
+          'password': passwordHash,
           'type': _selectedUserType,
         }),
       );

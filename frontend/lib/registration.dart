@@ -7,6 +7,7 @@ import 'dart:math';
 import 'utils.dart';
 import 'package:flutter_web3/flutter_web3.dart';
 import 'package:flutter/services.dart';
+import 'package:crypto/crypto.dart';
 
 class Registration extends StatefulWidget {
   @override
@@ -20,6 +21,7 @@ class _RegistrationState extends State<Registration> {
   Future<void> _sendDataToBackend(BuildContext context) async {
     final String username = _usernameController.text;
     final String password = _passwordController.text;
+    var passwordHash = sha256.convert(utf8.encode(password)).toString();
     final String patientAddress =
         context.read<MetaMaskProvider>().currentAddress;
 
@@ -28,7 +30,7 @@ class _RegistrationState extends State<Registration> {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'username': username,
-        'password': password,
+        'password': passwordHash,
         'patient_address': patientAddress,
       }),
     );
