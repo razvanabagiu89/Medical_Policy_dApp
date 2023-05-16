@@ -83,26 +83,6 @@ class _LoginState extends State<Login> {
     return Center(
       child: Consumer<MetaMaskProvider>(
         builder: (context, provider, child) {
-          late final Widget connectText;
-          if (provider.isConnected && provider.isInOperatingChain) {
-            connectText = Text(
-              'Connected to ${provider.currentAddress}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
-            );
-          } else if (provider.isConnected && !provider.isInOperatingChain) {
-            connectText = const Text(
-              'Wrong chain. Please connect to ${MetaMaskProvider.operatingChain}',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Color.fromARGB(255, 15, 15, 15)),
-            );
-          } else {
-            connectText = const Text(
-              'Please connect to MetaMask',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
-            );
-          }
           late final Widget connectButton;
           bool isPatient = _selectedUserType == 'patient';
           bool showConnectButton =
@@ -164,8 +144,8 @@ class _LoginState extends State<Login> {
                   });
                 },
               ),
-              connectText,
               if (isPatient && showConnectButton) connectButton,
+              if (!showConnectButton) connectButton,
               ElevatedButton(
                 onPressed: () => _sendDataToBackend(context),
                 child: Text('Login'),

@@ -26,68 +26,128 @@ class Dashboard extends StatelessWidget {
                     style: const TextStyle(fontSize: 24.0),
                   );
                 } else {
-                  return Text(
-                    'MetaMask not connected, only read-only access',
-                    style: const TextStyle(fontSize: 24.0),
+                  return const Text(
+                    'Wallet not connected, limited access',
+                    style: TextStyle(fontSize: 24.0),
                   );
                 }
               },
             ),
-            const SizedBox(height: 24.0),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => AddMedicalRecord()));
+            const SizedBox(height: 12.0),
+            Consumer<MetaMaskProvider>(
+              builder: (context, provider, child) {
+                return Opacity(
+                  opacity: provider.isConnected ? 1 : 0.8,
+                  child: ElevatedButton(
+                    onPressed: provider.isConnected
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AddMedicalRecord(),
+                              ),
+                            );
+                          }
+                        : null,
+                    child: const Text('Add Medical Record'),
+                  ),
+                );
               },
-              child: const Text('Add Medical Record'),
             ),
             const SizedBox(height: 12.0),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => DeleteMedicalRecord()));
+            Consumer<MetaMaskProvider>(
+              builder: (context, provider, child) {
+                return Opacity(
+                  opacity: provider.isConnected ? 1 : 0.8,
+                  child: ElevatedButton(
+                    onPressed: provider.isConnected
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DeleteMedicalRecord(),
+                              ),
+                            );
+                          }
+                        : null,
+                    child: const Text('Delete Medical Record'),
+                  ),
+                );
               },
-              child: const Text('Delete Medical Record'),
             ),
             const SizedBox(height: 12.0),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => GrantAccess()));
+            Consumer<MetaMaskProvider>(
+              builder: (context, provider, child) {
+                return Opacity(
+                  opacity: provider.isConnected ? 1 : 0.8,
+                  child: ElevatedButton(
+                    onPressed: provider.isConnected
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => GrantAccess(),
+                              ),
+                            );
+                          }
+                        : null,
+                    child: const Text('Grant Access'),
+                  ),
+                );
               },
-              child: const Text('Grant Access'),
             ),
             const SizedBox(height: 12.0),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => RevokeAccess()));
+            Consumer<MetaMaskProvider>(
+              builder: (context, provider, child) {
+                return Opacity(
+                  opacity: provider.isConnected ? 1 : 0.8,
+                  child: ElevatedButton(
+                    onPressed: provider.isConnected
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => RevokeAccess(),
+                              ),
+                            );
+                          }
+                        : null,
+                    child: const Text('Revoke Access'),
+                  ),
+                );
               },
-              child: const Text('Revoke Access'),
             ),
             const SizedBox(height: 12.0),
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ShowAccessesScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const ShowAccessesScreen()),
                 );
               },
               child: const Text('Show Accesses'),
             ),
             const SizedBox(height: 12.0),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AddWallet()),
+            Consumer<MetaMaskProvider>(
+              builder: (context, provider, child) {
+                return Opacity(
+                  opacity: provider.isConnected ? 1 : 0.8,
+                  child: ElevatedButton(
+                    onPressed: provider.isConnected
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => AddWallet(),
+                              ),
+                            );
+                          }
+                        : null,
+                    child: const Text('Add Wallet'),
+                  ),
                 );
               },
-              child: const Text('Add Wallet'),
             ),
             const SizedBox(height: 12.0),
             ElevatedButton(

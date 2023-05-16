@@ -3,10 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:math';
-import 'utils.dart';
-import 'package:flutter_web3/flutter_web3.dart';
-import 'package:flutter/services.dart';
 import 'package:crypto/crypto.dart';
 
 class Registration extends StatefulWidget {
@@ -47,6 +43,8 @@ class _RegistrationState extends State<Registration> {
     return Center(
       child: Consumer<MetaMaskProvider>(
         builder: (context, provider, child) {
+          bool showConnectButton =
+              !provider.isConnected || !provider.isInOperatingChain;
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -60,7 +58,16 @@ class _RegistrationState extends State<Registration> {
                 obscureText: true,
               ),
               ElevatedButton(
-                onPressed: () => _sendDataToBackend(context),
+                onPressed: () => {
+                  if (showConnectButton)
+                    {
+                      context.read<MetaMaskProvider>().connect(),
+                    }
+                  else
+                    {
+                      _sendDataToBackend(context),
+                    }
+                },
                 child: Text('Register'),
               ),
             ],

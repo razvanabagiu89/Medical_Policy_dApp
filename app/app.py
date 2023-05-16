@@ -11,7 +11,9 @@ import boto3
 import hashlib
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins="http://127.0.0.1:33225")
+ALLOWED_IP = "127.0.0.1"
+
 app.secret_key = app_secret_key
 app.config["app.json.compact"] = False
 
@@ -27,10 +29,7 @@ s3 = boto3.client(
     aws_secret_access_key=s3_secret_key,
 )
 
-"""
-used just for read-only txs (getters) and admin calls (add_patient, create_policies)
-just admin will issue txs to add patients and create policies to not get malicious txs from others
-"""
+# used just for read-only txs (getters) and admin calls (add_patient, create_policies)
 web3 = Web3(Web3.HTTPProvider(web3_host))
 patient_registry_contract = get_contract(
     web3, "PatientRegistryContract", patient_registry_contract_address
@@ -38,6 +37,13 @@ patient_registry_contract = get_contract(
 access_policy_contract = get_contract(
     web3, "AccessPolicyContract", access_policy_contract_address
 )
+
+
+@app.before_request
+def check_ip():
+    client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+    if client_ip != ALLOWED_IP:
+        return "Access denied", 403
 
 
 @app.route("/api/patient", methods=["POST"])
