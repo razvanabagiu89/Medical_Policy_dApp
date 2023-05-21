@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'user_provider.dart';
 import 'package:provider/provider.dart';
+import 'utils.dart';
+import 'package:flutter_web3/flutter_web3.dart';
 
 class DeleteMedicalRecord extends StatefulWidget {
   @override
@@ -16,6 +18,16 @@ class DeleteMedicalRecordState extends State<DeleteMedicalRecord> {
   Future<void> deleteMedicalRecord(BuildContext context) async {
     final userModel = context.read<UserProvider>();
     final patientId = userModel.getUserID();
+    ////////////////////////// blockchain //////////////////////////
+    final signer = provider!.getSigner();
+    final contract = await getPatientRegistryContract(signer);
+    List<int> medicalRecordBytes32 = hexStringToUint8List(_fileHash);
+    final tx = await contract.send(
+        'deleteMedicalRecord', [int.parse(patientId), medicalRecordBytes32]);
+    await tx.wait();
+    // final tx2 = await contract
+    //     .call('getPatientMedicalRecordsHashes', [int.parse(patientId)]);
+    // print(tx2);
     ////////////////////////// backend //////////////////////////
     final url =
         'http://localhost:5000/api/patient/$patientId/delete_medical_record';

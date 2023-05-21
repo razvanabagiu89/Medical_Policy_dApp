@@ -58,6 +58,58 @@ contract PatientRegistryContract is Ownable {
         p.medicalRecordsHashes.push(_medicalRecordHash);
     }
 
+    function deleteMedicalRecord(
+        uint256 _patientID,
+        bytes32 _medicalRecordHash
+    ) external {
+        // check if the patient exists
+        require(
+            allPatients[_patientID].patientAddresses.length > 0,
+            "Invalid patient ID"
+        );
+
+        // check if the msg.sender is in the patientAddresses array
+        bool senderIsAuthorized = false;
+        for (
+            uint i = 0;
+            i < allPatients[_patientID].patientAddresses.length;
+            i++
+        ) {
+            if (allPatients[_patientID].patientAddresses[i] == msg.sender) {
+                senderIsAuthorized = true;
+                break;
+            }
+        }
+        require(senderIsAuthorized, "Sender is not authorized");
+
+        // find the record to be deleted
+        uint indexToDelete;
+        bool found = false;
+        for (
+            uint i = 0;
+            i < allPatients[_patientID].medicalRecordsHashes.length;
+            i++
+        ) {
+            if (
+                allPatients[_patientID].medicalRecordsHashes[i] ==
+                _medicalRecordHash
+            ) {
+                indexToDelete = i;
+                found = true;
+                break;
+            }
+        }
+        require(found, "Medical record not found");
+
+        // delete the record
+        allPatients[_patientID].medicalRecordsHashes[
+            indexToDelete
+        ] = allPatients[_patientID].medicalRecordsHashes[
+            allPatients[_patientID].medicalRecordsHashes.length - 1
+        ];
+        allPatients[_patientID].medicalRecordsHashes.pop();
+    }
+
     function addWallet(uint256 _patientID, address _newAddress) external {
         // check if the patient exists
         require(
