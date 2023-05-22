@@ -175,14 +175,14 @@ def remove_institution():
         )
 
 
-@app.route("/api/<institution_CIF>/doctor/add", methods=["POST"])
-def add_doctor(institution_CIF):
+@app.route("/api/<institution_CIF>/employee/add", methods=["POST"])
+def add_employee(institution_CIF):
     institution_CIF = int(institution_CIF)
-    doctor_username = request.json["username"]
-    doctor_password = "".join(random.choice(string.ascii_letters) for i in range(8))
-    doctor_password_hash = str(hashlib.sha256(doctor_password.encode()).hexdigest())
-    doctor_full_name = request.json["full_name"]
-    doctor_id = str(institution_CIF) + str(randint(0, 20))
+    employee_username = request.json["username"]
+    employee_password = "".join(random.choice(string.ascii_letters) for i in range(8))
+    employee_password_hash = str(hashlib.sha256(employee_password.encode()).hexdigest())
+    employee_full_name = request.json["full_name"]
+    employee_id = str(institution_CIF) + str(randint(0, 20))
 
     try:
         institution = entities.find_one({"ID": institution_CIF, "type": "institution"})
@@ -191,33 +191,33 @@ def add_doctor(institution_CIF):
 
         entities.insert_one(
             {
-                "username": doctor_username,
-                "password": doctor_password_hash,
-                "full_name": doctor_full_name,
-                "ID": doctor_id,
-                "type": "doctor",
+                "username": employee_username,
+                "password": employee_password_hash,
+                "full_name": employee_full_name,
+                "ID": employee_id,
+                "type": "employee",
                 "belongs_to": institution_CIF,
                 "access_to": [],
             }
         )
-        print("Doctor inserted with ID:", doctor_id)
+        print("Employee inserted with ID:", employee_id)
         return (
             jsonify(
                 {
                     "status": "success",
-                    "doctor_id": doctor_id,
-                    "password": doctor_password,
+                    "employee_id": employee_id,
+                    "password": employee_password,
                 }
             ),
             201,
         )
     except errors.DuplicateKeyError:
-        print("Error: A doctor with this ID already exists.")
+        print("Error: An employee with this ID already exists.")
         return (
             jsonify(
                 {
                     "status": "error",
-                    "message": "A doctor with this ID already exists.",
+                    "message": "An employee with this ID already exists.",
                 }
             ),
             400,
@@ -227,13 +227,13 @@ def add_doctor(institution_CIF):
         return jsonify({"status": "error", "message": str(e)}), 400
 
 
-@app.route("/api/<institution_CIF>/doctor/remove", methods=["POST"])
-def remove_doctor(institution_CIF):
-    doctor_username = request.json["username"]
+@app.route("/api/<institution_CIF>/employee/remove", methods=["POST"])
+def remove_employee(institution_CIF):
+    employee_username = request.json["username"]
     try:
         # db
-        entities.delete_one({"username": doctor_username, "type": "doctor"})
-        print("doctor deleted:", doctor_username)
+        entities.delete_one({"username": employee_username, "type": "employee"})
+        print("Employee deleted:", employee_username)
         return jsonify({"status": "success"}), 200
     except Exception as e:
         print(f"Error: {e}")
@@ -241,7 +241,7 @@ def remove_doctor(institution_CIF):
             jsonify(
                 {
                     "status": "error",
-                    "message": "Error in backend: mongodb could not delete doctor.",
+                    "message": "Error in backend: mongodb could not delete employee.",
                 }
             ),
             400,
@@ -402,18 +402,18 @@ def get_all_policies_for_patient(patient_id):
         for file_hash in patient["medical_records_hashes"]:
             file_hash_policies = {}
             for wallet in patient["wallets"]:
-                doctor_ids = get_patient_policy_allowed_by_medical_record_hash(
+                employee_ids = get_patient_policy_allowed_by_medical_record_hash(
                     access_policy_contract,
                     wallet,
                     hex_to_bytes32(file_hash),  # convert hex strings to bytes32
                 )
                 # convert bytes to string
-                doctor_ids_str = [
-                    Web3.to_text(doctor_id_bytes).rstrip("\x00")
-                    for doctor_id_bytes in doctor_ids
+                employee_ids_str = [
+                    Web3.to_text(employee_id_bytes).rstrip("\x00")
+                    for employee_id_bytes in employee_ids
                 ]
-                if len(doctor_ids_str) > 0:
-                    file_hash_policies[wallet] = doctor_ids_str
+                if len(employee_ids_str) > 0:
+                    file_hash_policies[wallet] = employee_ids_str
             medical_record_policies[file_hash] = file_hash_policies
 
         return (
@@ -436,17 +436,17 @@ def grant_access_to_medical_record(patient_id):
 
     if patient:
         file_hash = request.json["file_hash"]
-        doctor_id = request.json["doctor_id"]
+        employee_id = request.json["employee_id"]
         try:
             # db
-            doctor = entities.find_one({"ID": doctor_id, "type": "doctor"})
-            if doctor:
+            employee = entities.find_one({"ID": employee_id, "type": "employee"})
+            if employee:
                 entities.update_one(
-                    {"ID": doctor_id, "type": "doctor"},
+                    {"ID": employee_id, "type": "employee"},
                     {"$addToSet": {"access_to": file_hash}},
                 )
             else:
-                return jsonify({"status": "error", "message": "Doctor not found."}), 404
+                return jsonify({"status": "error", "message": "Employee not found."}), 404
             return jsonify({"status": "success", "message": "Access granted."}), 200
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)}), 400
@@ -461,18 +461,18 @@ def revoke_access_to_medical_record(patient_id):
 
     if patient:
         file_hash = request.json["file_hash"]
-        doctor_id = request.json["doctor_id"]
+        employee_id = request.json["employee_id"]
 
         try:
             # db
-            doctor = entities.find_one({"ID": doctor_id, "type": "doctor"})
-            if doctor:
+            employee = entities.find_one({"ID": employee_id, "type": "employee"})
+            if employee:
                 entities.update_one(
-                    {"ID": doctor_id, "type": "doctor"},
+                    {"ID": employee_id, "type": "employee"},
                     {"$pull": {"access_to": file_hash}},
                 )
             else:
-                return jsonify({"status": "error", "message": "Doctor not found."}), 404
+                return jsonify({"status": "error", "message": "Employee not found."}), 404
             return jsonify({"status": "success", "message": "Access revoked."}), 200
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)}), 400
@@ -480,11 +480,11 @@ def revoke_access_to_medical_record(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
-@app.route("/api/doctor/<doctor_id>/request_access", methods=["POST"])
-def request_access(doctor_id):
-    doctor = entities.find_one({"ID": doctor_id})
+@app.route("/api/employee/<employee_id>/request_access", methods=["POST"])
+def request_access(employee_id):
+    employee = entities.find_one({"ID": employee_id})
 
-    if doctor:
+    if employee:
         patient_username = request.json["patient_username"]
         file_hash = request.json["file_hash"]
         try:
@@ -494,9 +494,9 @@ def request_access(doctor_id):
             )
             if patient:
                 new_request = {
-                    "from": doctor["full_name"],
-                    "ID": doctor["ID"],
-                    "belongs_to": doctor["belongs_to"],
+                    "from": employee["full_name"],
+                    "ID": employee["ID"],
+                    "belongs_to": employee["belongs_to"],
                     "document": file_hash,
                 }
                 entities.update_one(
@@ -512,20 +512,20 @@ def request_access(doctor_id):
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)}), 400
     else:
-        return jsonify({"status": "error", "message": "Doctor not found."}), 404
+        return jsonify({"status": "error", "message": "Employee not found."}), 404
 
 
-@app.route("/api/doctor/<doctor_id>/show_documents", methods=["GET"])
-def show_documents(doctor_id):
+@app.route("/api/employee/<employee_id>/show_documents", methods=["GET"])
+def show_documents(employee_id):
     try:
         # db
-        doctor = entities.find_one({"ID": doctor_id, "type": "doctor"})
-        if doctor:
-            access_to_list = doctor.get("access_to", [])
+        employee = entities.find_one({"ID": employee_id, "type": "employee"})
+        if employee:
+            access_to_list = employee.get("access_to", [])
             return jsonify({"status": "success", "access_to": access_to_list}), 200
         else:
             return (
-                jsonify({"status": "error", "message": "Doctor not found."}),
+                jsonify({"status": "error", "message": "Employee not found."}),
                 404,
             )
     except Exception as e:

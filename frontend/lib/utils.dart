@@ -10,8 +10,8 @@ import 'package:yaml/yaml.dart';
 import 'package:http/http.dart' as http;
 
 String patientRegistryContractJsonPath =
-    'contracts/PatientRegistryContract.json';
-String accessPolicyContractJsonPath = 'contracts/AccessPolicyContract.json';
+    'contracts/PatientRegistryContract.abi';
+String accessPolicyContractJsonPath = 'contracts/AccessPolicyContract.abi';
 String patientRegistryContractAddress = '';
 String accessPolicyContractAddress = '';
 
@@ -81,8 +81,8 @@ Uint8List hexStringToUint8List(String hexString) {
   return Uint8List.fromList(intList);
 }
 
-Future<List<String>> fetchMedicalHashes(doctor_id) async {
-  final url = 'http://localhost:5000/api/doctor/$doctor_id/show_documents';
+Future<List<String>> fetchMedicalHashes(employee_id) async {
+  final url = 'http://localhost:5000/api/employee/$employee_id/show_documents';
   final response = await http.get(
     Uri.parse(url),
     headers: <String, String>{

@@ -8,7 +8,7 @@ import 'user_model.dart';
 import 'user_provider.dart';
 import 'admin_dashboard.dart';
 import 'institution_dashboard.dart';
-import 'doctor_dashboard.dart';
+import 'employee_dashboard.dart';
 import 'package:crypto/crypto.dart';
 
 class Login extends StatefulWidget {
@@ -67,10 +67,10 @@ class _LoginState extends State<Login> {
           print("Institution login successful");
           Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => InstitutionDashboard()));
-        } else if (_selectedUserType == 'doctor') {
-          print("Doctor login successful");
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => DoctorDashboard()));
+        } else if (_selectedUserType == 'employee') {
+          print("Employee login successful");
+          Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => EmployeeDashboard()));
         }
       }
     } else {
@@ -131,7 +131,7 @@ class _LoginState extends State<Login> {
               ),
               DropdownButton<String>(
                 value: _selectedUserType,
-                items: <String>['institution', 'doctor', 'patient']
+                items: <String>['institution', 'employee', 'patient']
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,

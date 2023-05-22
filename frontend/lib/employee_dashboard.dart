@@ -6,25 +6,25 @@ import 'package:provider/provider.dart';
 import 'utils.dart';
 import 'show_documents.dart';
 
-class DoctorDashboard extends StatefulWidget {
-  const DoctorDashboard({Key? key}) : super(key: key);
+class EmployeeDashboard extends StatefulWidget {
+  const EmployeeDashboard({Key? key}) : super(key: key);
 
   @override
-  State<DoctorDashboard> createState() => _DoctorDashboardState();
+  State<EmployeeDashboard> createState() => _EmployeeDashboardState();
 }
 
-class _DoctorDashboardState extends State<DoctorDashboard> {
+class _EmployeeDashboardState extends State<EmployeeDashboard> {
   final GlobalKey<FormState> _requestFormKey = GlobalKey<FormState>();
   String filehash = '';
   String patientUsername = '';
   late Future<List<String>> futureMedicalHashes;
-  String doctorId = '';
+  String employeeId = '';
 
   Future<void> requestAccess(BuildContext context) async {
     final userModel = context.read<UserProvider>();
     final id = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:5000/api/doctor/$id/request_access';
+    final url = 'http://localhost:5000/api/employee/$id/request_access';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{
@@ -47,7 +47,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Doctor Dashboard'),
+        title: Text('Employee Dashboard'),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -106,8 +106,8 @@ class _DoctorDashboardState extends State<DoctorDashboard> {
                     child: ElevatedButton(
                       onPressed: () async {
                         final userModel = context.read<UserProvider>();
-                        doctorId = userModel.getUserID();
-                        futureMedicalHashes = fetchMedicalHashes(doctorId);
+                        employeeId = userModel.getUserID();
+                        futureMedicalHashes = fetchMedicalHashes(employeeId);
                         Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => ShowDocuments(
                               futureMedicalHashes: futureMedicalHashes),

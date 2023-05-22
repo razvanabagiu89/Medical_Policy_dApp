@@ -10,54 +10,54 @@ class InstitutionDashboard extends StatefulWidget {
 }
 
 class _InstitutionDashboardState extends State<InstitutionDashboard> {
-  final GlobalKey<FormState> _addDoctorFormKey = GlobalKey<FormState>();
-  final GlobalKey<FormState> _removeDoctorFormKey = GlobalKey<FormState>();
-  String addDoctorUsername = '';
-  String removeDoctorUsername = '';
-  String doctorFullName = '';
+  final GlobalKey<FormState> _addEmployeeFormKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _removeEmployeeFormKey = GlobalKey<FormState>();
+  String addEmployeeUsername = '';
+  String removeEmployeeUsername = '';
+  String employeeFullName = '';
 
-  Future<void> addDoctor(BuildContext context) async {
+  Future<void> addEmployee(BuildContext context) async {
     final userModel = context.read<UserProvider>();
     final id = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:5000/api/$id/doctor/add';
+    final url = 'http://localhost:5000/api/$id/employee/add';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
       body: jsonEncode(<String, String>{
-        'username': addDoctorUsername,
-        'full_name': doctorFullName,
+        'username': addEmployeeUsername,
+        'full_name': employeeFullName,
       }),
     );
 
     if (response.statusCode == 201) {
       Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-      String doctorPassword = jsonResponse['password'].toString();
-      print(doctorPassword);
+      String employeePassword = jsonResponse['password'].toString();
+      print(employeePassword);
     } else {
       print("Error: ${response.body}");
     }
   }
 
-  Future<void> removeDoctor(BuildContext context) async {
+  Future<void> removeEmployee(BuildContext context) async {
     final userModel = context.read<UserProvider>();
     final id = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:5000/api/$id/doctor/remove';
+    final url = 'http://localhost:5000/api/$id/employee/remove';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
       body: jsonEncode(<String, String>{
-        'username': removeDoctorUsername,
+        'username': removeEmployeeUsername,
       }),
     );
 
     if (response.statusCode == 200) {
-      print('Doctor removed successfully');
+      print('Employee removed successfully');
     } else {
       print("Error: ${response.body}");
     }
@@ -74,14 +74,14 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text('Add Doctor', style: TextStyle(fontSize: 18)),
+            Text('Add Employee', style: TextStyle(fontSize: 18)),
             Form(
-              key: _addDoctorFormKey,
+              key: _addEmployeeFormKey,
               child: Column(
                 children: [
                   TextFormField(
                     decoration: InputDecoration(
-                      hintText: 'Enter doctor username',
+                      hintText: 'Enter employee username',
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -91,13 +91,13 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
                     },
                     onChanged: (value) {
                       setState(() {
-                        addDoctorUsername = value;
+                        addEmployeeUsername = value;
                       });
                     },
                   ),
                   TextFormField(
                     decoration: InputDecoration(
-                      hintText: 'Enter doctor full name',
+                      hintText: 'Enter employee full name',
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -107,7 +107,7 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
                     },
                     onChanged: (value) {
                       setState(() {
-                        doctorFullName = value;
+                        employeeFullName = value;
                       });
                     },
                   ),
@@ -115,27 +115,27 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
                     padding: EdgeInsets.symmetric(vertical: 16.0),
                     child: ElevatedButton(
                       onPressed: () async {
-                        if (_addDoctorFormKey.currentState!.validate()) {
-                          await addDoctor(context);
+                        if (_addEmployeeFormKey.currentState!.validate()) {
+                          await addEmployee(context);
                           print(
-                              'Adding doctor: $addDoctorUsername, $doctorFullName');
+                              'Adding employee: $addEmployeeUsername, $employeeFullName');
                         }
                       },
-                      child: Text('Add Doctor'),
+                      child: Text('Add Employee'),
                     ),
                   ),
                 ],
               ),
             ),
             Divider(),
-            Text('Remove Doctor', style: TextStyle(fontSize: 18)),
+            Text('Remove Employee', style: TextStyle(fontSize: 18)),
             Form(
-              key: _removeDoctorFormKey,
+              key: _removeEmployeeFormKey,
               child: Column(
                 children: [
                   TextFormField(
                     decoration: InputDecoration(
-                      hintText: 'Enter doctor username',
+                      hintText: 'Enter employee username',
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -145,7 +145,7 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
                     },
                     onChanged: (value) {
                       setState(() {
-                        removeDoctorUsername = value;
+                        removeEmployeeUsername = value;
                       });
                     },
                   ),
@@ -153,13 +153,12 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
                     padding: EdgeInsets.symmetric(vertical: 16.0),
                     child: ElevatedButton(
                       onPressed: () async {
-                        if (_removeDoctorFormKey.currentState!.validate()) {
-                          // Remove doctor logic
-                          await removeDoctor(context);
-                          print('Removing doctor: $doctorFullName');
+                        if (_removeEmployeeFormKey.currentState!.validate()) {
+                          await removeEmployee(context);
+                          print('Removing employee: $removeEmployeeUsername');
                         }
                       },
-                      child: Text('Remove Doctor'),
+                      child: Text('Remove Employee'),
                     ),
                   ),
                 ],

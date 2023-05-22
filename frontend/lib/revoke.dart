@@ -14,7 +14,7 @@ class RevokeAccess extends StatefulWidget {
 
 class _RevokeAccessState extends State<RevokeAccess> {
   final _formKey = GlobalKey<FormState>();
-  String _doctorId = '';
+  String _employeeId = '';
   String _fileHash = '';
 
   Future<void> revokeAccess(BuildContext context) async {
@@ -27,7 +27,7 @@ class _RevokeAccessState extends State<RevokeAccess> {
     final tx = await contract.send('revokeAccess', [
       patientAddress,
       hexStringToUint8List(_fileHash),
-      stringToBytes32(_doctorId)
+      stringToBytes32(_employeeId)
     ]);
     await tx.wait();
     List<dynamic> ids = await contract.call(
@@ -41,7 +41,7 @@ class _RevokeAccessState extends State<RevokeAccess> {
         'Content-Type': 'application/json',
       },
       body: jsonEncode(<String, String>{
-        'doctor_id': _doctorId,
+        'employee_id': _employeeId,
         'file_hash': _fileHash,
         'patient_address': patientAddress,
       }),
@@ -70,17 +70,17 @@ class _RevokeAccessState extends State<RevokeAccess> {
             children: <Widget>[
               TextFormField(
                 decoration: InputDecoration(
-                  hintText: 'Enter doctor ID',
+                  hintText: 'Enter employee ID',
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter a valid doctor ID';
+                    return 'Please enter a valid employee ID';
                   }
                   return null;
                 },
                 onChanged: (value) {
                   setState(() {
-                    _doctorId = value;
+                    _employeeId = value;
                   });
                 },
               ),
