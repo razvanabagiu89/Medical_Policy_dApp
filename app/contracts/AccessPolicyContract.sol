@@ -40,8 +40,17 @@ contract AccessPolicyContract is Ownable {
 
         if (policy.institutionIDToAllowed[institutionID] == false) {
             policy.institutionIDToAllowed[institutionID] = true;
-            policy.institutionIDs.push(institutionID);
-            policy.institutionCount++;
+            bool isDuplicate = false;
+            for (uint i = 0; i < policy.institutionIDs.length; i++) {
+                if (policy.institutionIDs[i] == institutionID) {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+            if (!isDuplicate) {
+                policy.institutionIDs.push(institutionID);
+                policy.institutionCount++;
+            }
         }
     }
 
