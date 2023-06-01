@@ -208,6 +208,7 @@ def remove_institution():
 @app.route("/api/<institution_CIF>/employee/add", methods=["POST"])
 def add_employee(institution_CIF):
     institution_CIF = int(institution_CIF)
+    institution_username = request.json["institution_username"]
     employee_username = request.json["username"]
     employee_password = "".join(random.choice(string.ascii_letters) for i in range(8))
     employee_password_hash = str(hashlib.sha256(employee_password.encode()).hexdigest())
@@ -226,7 +227,7 @@ def add_employee(institution_CIF):
                 "full_name": employee_full_name,
                 "ID": employee_id,
                 "type": "employee",
-                "belongs_to": institution_CIF,
+                "belongs_to": institution_username,
                 "access_to": [],
             }
         )

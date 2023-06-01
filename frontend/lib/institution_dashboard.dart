@@ -33,6 +33,7 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
       body: jsonEncode(<String, String>{
         'username': addEmployeeUsername,
         'full_name': employeeFullName,
+        'institution_username': userModel.getUsername(),
       }),
     );
 
