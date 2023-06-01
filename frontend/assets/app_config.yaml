@@ -5,7 +5,8 @@ mongodb:
   entities_collection: entities
   host: mongodb://localhost:27017/
 web3:
-  access_policy_contract_address: '0xED389FA6475Bd5b50D3B97B0Cf20df2D3F8843bf'
+  access_policy_contract_address: '0x0CC224B9aaa136FddFD7E9bB277a1bdb6232620e'
   chain_id: 1337
   host: http://127.0.0.1:8545
-  patient_registry_contract_address: '0xA341B26df1e3cfDAAe1c339aEB388bC9a87f007b'
+  institution_registry_contract_address: '0x49C2c09A2cF792E1EBFFEDD7a1D7599e892da359'
+  patient_registry_contract_address: '0xF5ddE8B60E194f70BA84c4D8af2CAD056c9D95e4'

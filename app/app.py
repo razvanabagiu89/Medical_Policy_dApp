@@ -37,6 +37,9 @@ patient_registry_contract = get_contract(
 access_policy_contract = get_contract(
     web3, "AccessPolicyContract", access_policy_contract_address
 )
+institution_registry_contract = get_contract(
+    web3, "InstitutionRegistryContract", institution_registry_contract_address
+)
 
 
 @app.before_request
@@ -119,6 +122,20 @@ def add_institution():
     )
     institution_CIF = request.json["CIF"]
 
+    # blockchain
+    try:
+        add_institution_helper(
+            institution_registry_contract,
+            string_to_bytes32(institution_username),
+            int(institution_CIF),
+            web3,
+        )
+    except exceptions.ContractLogicError:
+        return (
+            jsonify({"status": "error", "message": "Institution already exists"}),
+            400,
+        )
+
     try:
         # db
         entities.insert_one(
@@ -156,6 +173,22 @@ def add_institution():
 @app.route("/api/institution/remove", methods=["POST"])
 def remove_institution():
     institution_username = request.json["username"]
+
+    # blockchain
+    try:
+        remove_institution_helper(
+            institution_registry_contract,
+            string_to_bytes32(institution_username),
+            web3,
+        )
+    except exceptions.ContractLogicError:
+        return (
+            jsonify(
+                {"status": "error", "message": "No institution with this name exists"}
+            ),
+            400,
+        )
+
     try:
         # db
         entities.delete_one({"username": institution_username, "type": "institution"})

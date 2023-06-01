@@ -41,6 +41,9 @@ patient_registry_contract_address = app_config["web3"][
     "patient_registry_contract_address"
 ]
 access_policy_contract_address = app_config["web3"]["access_policy_contract_address"]
+institution_registry_contract_address = app_config["web3"][
+    "institution_registry_contract_address"
+]
 
 # flask
 app_secret_key = app_config["flask"]["secret_key"]
@@ -212,6 +215,26 @@ def get_patient_policy_allowed_by_medical_record_hash(
         ).call()
     )
     return institution_ids
+
+
+def add_institution_helper(
+    institution_registry_contract, institution_name, institution_id, web3_instance
+):
+    tx_hash = institution_registry_contract.functions.addInstitution(
+        institution_name, institution_id
+    ).transact({"from": admin_address})
+    tx_receipt = web3_instance.eth.wait_for_transaction_receipt(tx_hash)
+    return tx_receipt
+
+
+def remove_institution_helper(
+    institution_registry_contract, institution_name, web3_instance
+):
+    tx_hash = institution_registry_contract.functions.deleteInstitution(
+        institution_name
+    ).transact({"from": admin_address})
+    tx_receipt = web3_instance.eth.wait_for_transaction_receipt(tx_hash)
+    return tx_receipt
 
 
 def get_patient_owner(access_policy_contract, patient_address):

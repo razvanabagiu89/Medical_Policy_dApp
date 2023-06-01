@@ -12,8 +12,11 @@ import 'package:http/http.dart' as http;
 String patientRegistryContractJsonPath =
     'contracts/PatientRegistryContract.abi';
 String accessPolicyContractJsonPath = 'contracts/AccessPolicyContract.abi';
+String institutionRegistryContractJsonPath =
+    'contracts/InstitutionRegistryContract.abi';
 String patientRegistryContractAddress = '';
 String accessPolicyContractAddress = '';
+String institutionRegistryContractAddress = '';
 
 Future<void> parseYamlFile() async {
   String yamlString = await rootBundle.loadString('app_config.yaml');
@@ -23,6 +26,8 @@ Future<void> parseYamlFile() async {
       yamlMap["web3"]["patient_registry_contract_address"];
   accessPolicyContractAddress =
       yamlMap["web3"]["access_policy_contract_address"];
+  institutionRegistryContractAddress =
+      yamlMap["web3"]["institution_registry_contract_address"];
 }
 
 Future<Contract> getPatientRegistryContract(Signer provider) async {
@@ -37,6 +42,14 @@ Future<Contract> getAccessPolicyContract(Signer provider) async {
   final contract = await getContract(
       contractAddress: accessPolicyContractAddress,
       contractJsonPath: accessPolicyContractJsonPath,
+      provider: provider);
+  return contract;
+}
+
+Future<Contract> getInstitutionRegistryContract(Signer provider) async {
+  final contract = await getContract(
+      contractAddress: institutionRegistryContractAddress,
+      contractJsonPath: institutionRegistryContractJsonPath,
       provider: provider);
   return contract;
 }
