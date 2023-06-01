@@ -14,4 +14,12 @@ class UserProvider extends ChangeNotifier {
   String getUserID() {
     return _user!.id;
   }
+
+  String getUsername() {
+    return _user!.username;
+  }
+
+  String getUserType() {
+    return _user!.userType;
+  }
 }

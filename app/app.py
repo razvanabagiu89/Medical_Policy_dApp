@@ -173,7 +173,6 @@ def add_institution():
 @app.route("/api/institution/remove", methods=["POST"])
 def remove_institution():
     institution_username = request.json["username"]
-
     # blockchain
     try:
         remove_institution_helper(
@@ -188,9 +187,8 @@ def remove_institution():
             ),
             400,
         )
-
+    # db
     try:
-        # db
         entities.delete_one({"username": institution_username, "type": "institution"})
         print("Institution deleted:", institution_username)
         return jsonify({"status": "success"}), 200
@@ -307,6 +305,44 @@ def login():
                 "status": "success",
                 "message": "Login successful",
                 "id": user["ID"],
+            }
+        ),
+        200,
+    )
+
+
+@app.route("/api/change_password", methods=["POST"])
+def change_password():
+    data = request.get_json()
+    username = data.get("username")
+    old_password = data.get("old_password")
+    new_password = data.get("new_password")
+    type = data.get("type")
+    print(type)
+
+    if not username or not old_password or not new_password:
+        return (
+            jsonify({"status": "error", "message": "Missing fields"}),
+            400,
+        )
+
+    user = entities.find_one({"username": username, "type": type})
+
+    if not user or not user["password"] == old_password:
+        return (
+            jsonify({"status": "error", "message": "Invalid username or password"}),
+            401,
+        )
+
+    entities.update_one(
+        {"username": username, "type": type}, {"$set": {"password": new_password}}
+    )
+
+    return (
+        jsonify(
+            {
+                "status": "success",
+                "message": "Password changed successfully",
             }
         ),
         200,

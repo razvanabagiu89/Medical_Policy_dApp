@@ -57,7 +57,8 @@ class _LoginState extends State<Login> {
         String id = jsonResponse['id'].toString();
 
         final userProvider = Provider.of<UserProvider>(context, listen: false);
-        userProvider.setUser(UserModel(id: id));
+        userProvider.setUser(
+            UserModel(id: id, username: username, userType: _selectedUserType));
 
         if (_selectedUserType == 'patient') {
           print("Patient login successful");
