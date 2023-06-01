@@ -76,7 +76,6 @@ def add_patient():
                     "ID": patient_id,
                     "type": "patient",
                     "wallets": [patient_address_converted],
-                    "medical_records_hashes": [],
                     "requests": [],
                 }
             )
@@ -353,11 +352,6 @@ def add_medical_record(patient_id):
         medical_record_hash = request.json["medical_record_hash"]
         # s3
         upload_file_to_s3(file_like_object, medical_record_hash, s3)
-        # db
-        entities.update_one(
-            {"ID": patient_id},
-            {"$addToSet": {"medical_records_hashes": medical_record_hash}},
-        )
         print("Medical record added to patient with ID:", patient_id)
         return (
             jsonify({"status": "success"}),
@@ -377,11 +371,6 @@ def delete_medical_record(patient_id):
         medical_record_hash = request.json["medical_record_hash"]
         # s3
         delete_file_from_s3(medical_record_hash, s3)
-        # db
-        entities.update_one(
-            {"ID": patient_id},
-            {"$pull": {"medical_records_hashes": medical_record_hash}},
-        )
         print("Medical record deleted to patient with ID:", patient_id)
         return (
             jsonify({"status": "success"}),
@@ -399,13 +388,17 @@ def get_all_policies_for_patient(patient_id):
     if patient:
         medical_record_policies = {}
 
-        for file_hash in patient["medical_records_hashes"]:
+        # file_hashes now comes from blockchain as bytes32 array
+        file_hashes = get_patient_medical_records_hashes(
+            patient_registry_contract, patient_id
+        )
+        for file_hash in file_hashes:
             file_hash_policies = {}
             for wallet in patient["wallets"]:
                 employee_ids = get_patient_policy_allowed_by_medical_record_hash(
                     access_policy_contract,
                     wallet,
-                    hex_to_bytes32(file_hash),  # convert hex strings to bytes32
+                    file_hash,
                 )
                 # convert bytes to string
                 employee_ids_str = [
@@ -414,7 +407,8 @@ def get_all_policies_for_patient(patient_id):
                 ]
                 if len(employee_ids_str) > 0:
                     file_hash_policies[wallet] = employee_ids_str
-            medical_record_policies[file_hash] = file_hash_policies
+            # here we convert bytes32 to string to look good in the dict
+            medical_record_policies[Web3.to_text(file_hash)] = file_hash_policies
 
         return (
             jsonify(
@@ -446,7 +440,10 @@ def grant_access_to_medical_record(patient_id):
                     {"$addToSet": {"access_to": file_hash}},
                 )
             else:
-                return jsonify({"status": "error", "message": "Employee not found."}), 404
+                return (
+                    jsonify({"status": "error", "message": "Employee not found."}),
+                    404,
+                )
             return jsonify({"status": "success", "message": "Access granted."}), 200
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)}), 400
@@ -472,7 +469,10 @@ def revoke_access_to_medical_record(patient_id):
                     {"$pull": {"access_to": file_hash}},
                 )
             else:
-                return jsonify({"status": "error", "message": "Employee not found."}), 404
+                return (
+                    jsonify({"status": "error", "message": "Employee not found."}),
+                    404,
+                )
             return jsonify({"status": "success", "message": "Access revoked."}), 200
         except Exception as e:
             return jsonify({"status": "error", "message": str(e)}), 400

@@ -2,7 +2,7 @@ library utils;
 
 import 'dart:convert';
 import 'package:hex/hex.dart';
-
+import 'package:convert/convert.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web3/flutter_web3.dart';
 import 'package:crypto/crypto.dart';
@@ -59,12 +59,13 @@ Uint8List stringToBytes32(String inputString) {
   return bytes32;
 }
 
-String bytes32ToString(String inputHexString) {
-  inputHexString = inputHexString.substring(2);
-  Uint8List inputBytes = Uint8List.fromList(HEX.decode(inputHexString));
-  String decodedString = utf8.decode(inputBytes);
-  return decodedString.trimRight();
-}
+// should be deleted, not sure if used
+// String bytes32ToString(String inputHexString) {
+//   inputHexString = inputHexString.substring(2);
+//   Uint8List inputBytes = Uint8List.fromList(HEX.decode(inputHexString));
+//   String decodedString = utf8.decode(inputBytes);
+//   return decodedString.trimRight();
+// }
 
 String computeHash(String filename) {
   DateTime now = DateTime.now();
@@ -72,12 +73,30 @@ String computeHash(String filename) {
   List<int> bytes = utf8.encode(combined);
   Digest digest = sha256.convert(bytes);
 
-  String hashHexString = HEX.encode(digest.bytes);
+  // notice toString here to be utf8 encoded
+  String hashHexString = digest.toString();
   return hashHexString;
 }
 
+List<int> convertStringToBytes(String input) {
+  List<int> bytes = utf8.encode(input);
+
+  if (bytes.length < 32) {
+    print("NO MORE THAN 32 BYTES");
+    // If the string is less than 32 bytes, pad with zeroes
+    return List<int>.from(bytes)
+      ..addAll(List<int>.filled(32 - bytes.length, 0));
+  } else if (bytes.length > 32) {
+    print("YES MORE THAN 32 BYTES");
+    // If the string is more than 32 bytes, truncate it
+    return bytes.sublist(0, 32);
+  }
+  return bytes;
+}
+
+//TODO this should go and be replaced with convertStringToBytes
 Uint8List hexStringToUint8List(String hexString) {
-  List<int> intList = HEX.decode(hexString);
+  List<int> intList = hexString.codeUnits;
   return Uint8List.fromList(intList);
 }
 

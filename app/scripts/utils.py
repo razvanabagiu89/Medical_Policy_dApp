@@ -1,7 +1,7 @@
 from web3 import Web3
 from yaml import safe_load
 from random import *
-from hashlib import sha256
+import hashlib
 from dotenv import load_dotenv
 import os
 from solcx import compile_source, install_solc
@@ -97,7 +97,7 @@ def get_patient_count(patient_registry_contract):
 
 # deprecated - used only in tests
 def compute_hash(filename):
-    file_hash = bytes.fromhex(sha256(filename.encode("utf-8")).hexdigest())
+    file_hash = bytes.fromhex(hashlib.sha256(filename.encode("utf-8")).hexdigest())
     return file_hash
 
 

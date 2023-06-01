@@ -27,7 +27,7 @@ class AddMedicalRecord extends StatelessWidget {
       final signer = provider!.getSigner();
       final contract = await getPatientRegistryContract(signer);
       String medicalRecordHash = computeHash(fileName);
-      List<int> medicalRecordBytes32 = hexStringToUint8List(medicalRecordHash);
+      List<int> medicalRecordBytes32 = convertStringToBytes(medicalRecordHash);
       final tx = await contract.send(
           'addMedicalRecord', [int.parse(patientId), medicalRecordBytes32]);
       await tx.wait();
@@ -37,7 +37,8 @@ class AddMedicalRecord extends StatelessWidget {
         'patient_id': patientId,
         'filename': fileName,
         'filedata': fileData,
-        'medical_record_hash': medicalRecordHash,
+        'medical_record_hash':
+            utf8.decode(medicalRecordBytes32), // send as string
       });
 
       final response = await http.post(
