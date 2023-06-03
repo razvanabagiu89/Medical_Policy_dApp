@@ -1,30 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'user_provider.dart';
-import 'metamask_provider.dart';
+import '../user_provider.dart';
+import '../metamask_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_web3/flutter_web3.dart';
-import 'utils.dart';
+import '../utils.dart';
 
-class RevokeAccess extends StatefulWidget {
+class GrantAccess extends StatefulWidget {
   @override
-  _RevokeAccessState createState() => _RevokeAccessState();
+  _GrantAccessState createState() => _GrantAccessState();
 }
 
-class _RevokeAccessState extends State<RevokeAccess> {
+class _GrantAccessState extends State<GrantAccess> {
   final _formKey = GlobalKey<FormState>();
   String _employeeId = '';
   String _fileHash = '';
 
-  Future<void> revokeAccess(BuildContext context) async {
+  Future<void> grantAccess(BuildContext context) async {
     final patientAddress = context.read<MetaMaskProvider>().currentAddress;
     final userModel = context.read<UserProvider>();
     final patientId = userModel.getUserID();
     ////////////////////////// blockchain //////////////////////////
     final signer = provider!.getSigner();
     final contract = await getAccessPolicyContract(signer);
-    final tx = await contract.send('revokeAccess', [
+    final tx = await contract.send('grantAccess', [
       patientAddress,
       hexStringToUint8List(_fileHash),
       stringToBytes32(_employeeId)
@@ -34,7 +34,7 @@ class _RevokeAccessState extends State<RevokeAccess> {
         'getPatientPolicyAllowedByMedicalRecordHash',
         [patientAddress, hexStringToUint8List(_fileHash)]);
     ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:5000/api/patient/$patientId/revoke';
+    final url = 'http://localhost:5000/api/patient/$patientId/grant_access';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{
@@ -49,7 +49,7 @@ class _RevokeAccessState extends State<RevokeAccess> {
 
     if (response.statusCode == 200) {
       Navigator.pop(context);
-      print("Access revoked successfully");
+      print("Access granted successfully");
     } else {
       print("Error: ${response.body}");
     }
@@ -59,7 +59,7 @@ class _RevokeAccessState extends State<RevokeAccess> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Revoke Access'),
+        title: Text('Grant Access'),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -105,10 +105,10 @@ class _RevokeAccessState extends State<RevokeAccess> {
                 child: ElevatedButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      await revokeAccess(context);
+                      await grantAccess(context);
                     }
                   },
-                  child: Text('Revoke Access'),
+                  child: Text('Grant Access'),
                 ),
               ),
             ],

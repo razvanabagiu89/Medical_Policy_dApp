@@ -3,8 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
-import 'user_provider.dart';
-import 'utils.dart';
+import '../user_provider.dart';
+import '../utils.dart';
 import 'package:flutter_web3/flutter_web3.dart';
 
 class AddMedicalRecord extends StatelessWidget {

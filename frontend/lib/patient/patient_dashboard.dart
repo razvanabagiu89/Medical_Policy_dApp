@@ -1,4 +1,4 @@
-import 'metamask_provider.dart';
+import '../metamask_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'add_mr.dart';
