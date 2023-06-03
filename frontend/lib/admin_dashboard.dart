@@ -113,7 +113,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                           await addInstitution(context);
                         }
                       },
-                      child: Text('Add Institution (id 255+)'),
+                      child: Text('Add Institution'),
                     ),
                   ),
                 ],
