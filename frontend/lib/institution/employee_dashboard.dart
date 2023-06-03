@@ -52,7 +52,7 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Form(
               key: _requestFormKey,

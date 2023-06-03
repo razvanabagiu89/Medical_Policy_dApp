@@ -7,6 +7,7 @@ import 'package:crypto/crypto.dart';
 import '../common/input_field.dart';
 import '../common/password_field.dart';
 import '../common/gradient_button.dart';
+import '../utils.dart';
 
 class Registration extends StatefulWidget {
   @override
@@ -35,9 +36,9 @@ class _RegistrationState extends State<Registration> {
     );
 
     if (response.statusCode == 201) {
-      print("Registration successful");
+      showDialogCustom(context, "Registration successful");
     } else {
-      print("Registration failed");
+      showDialogCustom(context, "Registration failed");
     }
   }
 

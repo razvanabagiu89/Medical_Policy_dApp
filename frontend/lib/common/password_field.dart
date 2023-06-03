@@ -27,6 +27,7 @@ class _PasswordFieldState extends State<PasswordField> {
         controller: widget.controller,
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.all(27),
+          errorStyle: const TextStyle(color: Colors.red, fontSize: 15),
           enabledBorder: OutlineInputBorder(
             borderSide: const BorderSide(
               color: Pallete.borderColor,

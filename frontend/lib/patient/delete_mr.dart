@@ -61,7 +61,7 @@ class DeleteMedicalRecordState extends State<DeleteMedicalRecord> {
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               TextFormField(
                 decoration: InputDecoration(

@@ -58,7 +58,7 @@ class AddWalletState extends State<AddWallet> {
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               TextFormField(
                 decoration: InputDecoration(

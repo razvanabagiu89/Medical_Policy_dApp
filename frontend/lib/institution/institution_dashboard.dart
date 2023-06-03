@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/utils.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:crypto/crypto.dart';
+import '../common/input_field.dart';
+import '../common/password_field.dart';
+import '../common/gradient_button.dart';
 
 class InstitutionDashboard extends StatefulWidget {
   @override
@@ -11,16 +15,18 @@ class InstitutionDashboard extends StatefulWidget {
 }
 
 class _InstitutionDashboardState extends State<InstitutionDashboard> {
-  final GlobalKey<FormState> _addEmployeeFormKey = GlobalKey<FormState>();
-  final GlobalKey<FormState> _removeEmployeeFormKey = GlobalKey<FormState>();
-  final GlobalKey<FormState> _changePasswordFormKey = GlobalKey<FormState>();
-  String addEmployeeUsername = '';
-  String removeEmployeeUsername = '';
-  String employeeFullName = '';
-  String oldPassword = '';
-  String newPassword = '';
+  final TextEditingController addEmployeeUsernameController =
+      TextEditingController();
+  final TextEditingController removeEmployeeUsernameController =
+      TextEditingController();
+  final TextEditingController employeeFullNameController =
+      TextEditingController();
+  final TextEditingController oldPasswordController = TextEditingController();
+  final TextEditingController newPasswordController = TextEditingController();
 
   Future<void> addEmployee(BuildContext context) async {
+    final String addEmployeeUsername = addEmployeeUsernameController.text;
+    final String employeeFullName = employeeFullNameController.text;
     final userModel = context.read<UserProvider>();
     final id = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
@@ -40,13 +46,16 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
     if (response.statusCode == 201) {
       Map<String, dynamic> jsonResponse = jsonDecode(response.body);
       String employeePassword = jsonResponse['password'].toString();
-      print(employeePassword);
+      showDialogCustom(context,
+          'Employee password: ${employeePassword}\nDo not share it with anyone!');
     } else {
-      print("Error: ${response.body}");
+      showDialogCustom(
+          context, 'Error creating employee\nPlease try again later');
     }
   }
 
   Future<void> removeEmployee(BuildContext context) async {
+    final String removeEmployeeUsername = removeEmployeeUsernameController.text;
     final userModel = context.read<UserProvider>();
     final id = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
@@ -62,13 +71,16 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
     );
 
     if (response.statusCode == 200) {
-      print('Employee removed successfully');
+      showDialogCustom(context, 'Employee removed successfully');
     } else {
-      print("Error: ${response.body}");
+      showDialogCustom(
+          context, 'Error removing employee\nPlease try again later');
     }
   }
 
   Future<void> changePassword(BuildContext context) async {
+    final String oldPassword = oldPasswordController.text;
+    final String newPassword = newPasswordController.text;
     final userModel = context.read<UserProvider>();
     final username = userModel.getUsername();
     final type = userModel.getUserType();
@@ -88,170 +100,81 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
     );
 
     if (response.statusCode == 200) {
-      print('Password changed successfully');
+      showDialogCustom(context, 'Password changed successfully');
     } else {
-      print("Error: ${response.body}");
+      showDialogCustom(
+          context, 'Error changing password\nPlease try again later');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Institution Dashboard'),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text('Add Employee', style: TextStyle(fontSize: 18)),
-            Form(
-              key: _addEmployeeFormKey,
-              child: Column(
-                children: [
-                  TextFormField(
-                    decoration: InputDecoration(
-                      hintText: 'Enter employee username',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a valid username';
-                      }
-                      return null;
-                    },
-                    onChanged: (value) {
-                      setState(() {
-                        addEmployeeUsername = value;
-                      });
-                    },
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      hintText: 'Enter employee full name',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a valid full name';
-                      }
-                      return null;
-                    },
-                    onChanged: (value) {
-                      setState(() {
-                        employeeFullName = value;
-                      });
-                    },
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        if (_addEmployeeFormKey.currentState!.validate()) {
-                          await addEmployee(context);
-                          print(
-                              'Adding employee: $addEmployeeUsername, $employeeFullName');
-                        }
-                      },
-                      child: Text('Add Employee'),
-                    ),
-                  ),
-                ],
+      body: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
               ),
-            ),
-            Divider(),
-            Text('Remove Employee', style: TextStyle(fontSize: 18)),
-            Form(
-              key: _removeEmployeeFormKey,
-              child: Column(
-                children: [
-                  TextFormField(
-                    decoration: InputDecoration(
-                      hintText: 'Enter employee username',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a valid username';
-                      }
-                      return null;
-                    },
-                    onChanged: (value) {
-                      setState(() {
-                        removeEmployeeUsername = value;
-                      });
-                    },
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        if (_removeEmployeeFormKey.currentState!.validate()) {
-                          await removeEmployee(context);
-                          print('Removing employee: $removeEmployeeUsername');
-                        }
-                      },
-                      child: Text('Remove Employee'),
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 15),
+              const Text(
+                'Institution Dashboard',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 50,
+                ),
               ),
-            ),
-            Divider(),
-            Text('Change Password', style: TextStyle(fontSize: 18)),
-            Form(
-              key: _changePasswordFormKey,
-              child: Column(
-                children: [
-                  TextFormField(
-                    decoration: InputDecoration(
-                      hintText: 'Enter old password',
-                    ),
-                    obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your old password';
-                      }
-                      return null;
-                    },
-                    onChanged: (value) {
-                      setState(() {
-                        oldPassword = value;
-                      });
-                    },
-                  ),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      hintText: 'Enter new password',
-                    ),
-                    obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your new password';
-                      }
-                      return null;
-                    },
-                    onChanged: (value) {
-                      setState(() {
-                        newPassword = value;
-                      });
-                    },
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        if (_changePasswordFormKey.currentState!.validate()) {
-                          await changePassword(context);
-                          print(
-                              'Changing password for user: ${context.read<UserProvider>().getUsername()}');
-                        }
-                      },
-                      child: Text('Change Password'),
-                    ),
-                  ),
-                ],
+              const SizedBox(height: 15),
+              InputField(
+                labelText: 'Enter employee username',
+                controller: addEmployeeUsernameController,
               ),
-            ),
-          ],
+              const SizedBox(height: 15),
+              InputField(
+                labelText: 'Enter employee name',
+                controller: employeeFullNameController,
+              ),
+              const SizedBox(height: 20),
+              GradientButton(
+                onPressed: () async {
+                  await addEmployee(context);
+                },
+                buttonText: 'Add',
+              ),
+              const SizedBox(height: 20),
+              InputField(
+                labelText: 'Enter employee username',
+                controller: removeEmployeeUsernameController,
+              ),
+              const SizedBox(height: 20),
+              GradientButton(
+                onPressed: () async {
+                  await removeEmployee(context);
+                },
+                buttonText: 'Remove',
+              ),
+              const SizedBox(height: 20),
+              PasswordField(
+                labelText: 'Enter old password',
+                controller: oldPasswordController,
+              ),
+              const SizedBox(height: 15),
+              PasswordField(
+                labelText: 'Enter new password',
+                controller: newPasswordController,
+              ),
+              const SizedBox(height: 20),
+              GradientButton(
+                onPressed: () async {
+                  await changePassword(context);
+                },
+                buttonText: 'Change Password',
+              ),
+            ],
+          ),
         ),
       ),
     );

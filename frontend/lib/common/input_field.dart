@@ -4,13 +4,11 @@ import 'pallete.dart';
 class InputField extends StatefulWidget {
   final TextEditingController controller;
   final String labelText;
-  final FormFieldValidator<String>? validator;
 
   const InputField({
     Key? key,
     required this.controller,
     required this.labelText,
-    this.validator,
   }) : super(key: key);
 
   @override
@@ -26,7 +24,6 @@ class _InputFieldState extends State<InputField> {
       ),
       child: TextFormField(
         controller: widget.controller,
-        validator: widget.validator,
         autovalidateMode: AutovalidateMode.onUserInteraction,
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.all(27),

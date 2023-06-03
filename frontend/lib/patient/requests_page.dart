@@ -47,7 +47,7 @@ class _RequestsPageState extends State<RequestsPage> {
                   return ListTile(
                     title: Text(snapshot.data![index]['from']),
                     subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text('ID: ${snapshot.data![index]['ID']}'),
                         Text(

@@ -1,3 +1,5 @@
+import 'package:frontend/common/pallete.dart';
+
 import '../metamask_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +16,7 @@ import '../common/input_field.dart';
 import '../common/password_field.dart';
 import '../common/dropdown.dart';
 import '../common/gradient_button.dart';
+import '../utils.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -65,21 +68,19 @@ class _LoginState extends State<Login> {
             UserModel(id: id, username: username, userType: _selectedUserType));
 
         if (_selectedUserType == 'patient') {
-          print("Patient login successful");
           Navigator.of(context)
               .push(MaterialPageRoute(builder: (context) => Dashboard()));
         } else if (_selectedUserType == 'institution') {
-          print("Institution login successful");
           Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => InstitutionDashboard()));
         } else if (_selectedUserType == 'employee') {
-          print("Employee login successful");
           Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => const EmployeeDashboard()));
         }
       }
     } else {
-      print("Login failed");
+      showDialogCustom(
+          context, "Login failed. Please check your username or password.");
     }
   }
 
@@ -102,9 +103,10 @@ class _LoginState extends State<Login> {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 20,
-                      color: Colors.green,
+                      color: Pallete.gradient3,
                     ),
                   ),
+                  const SizedBox(height: 15),
                   GradientButton(
                     onPressed: () =>
                         context.read<MetaMaskProvider>().disconnect(),
@@ -113,10 +115,22 @@ class _LoginState extends State<Login> {
                 ],
               );
             } else if (provider.isConnected && !provider.isInOperatingChain) {
-              connectButton = GradientButton(
-                onPressed: () {}, // no action needed if wrong chain
-                buttonText:
+              connectButton = Column(
+                children: [
+                  const Text(
                     'Wrong chain. Please connect to ${MetaMaskProvider.operatingChain}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Color.fromARGB(255, 255, 0, 0),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  GradientButton(
+                    onPressed: () => context.read<MetaMaskProvider>().connect(),
+                    buttonText: "Connect",
+                  ),
+                ],
               );
             } else if (provider.isEnabled) {
               connectButton = GradientButton(
@@ -124,9 +138,22 @@ class _LoginState extends State<Login> {
                 buttonText: "Connect",
               );
             } else {
-              connectButton = GradientButton(
-                onPressed: () {}, // no action needed if not supported browser
-                buttonText: 'Please use a Web3 supported browser.',
+              connectButton = Column(
+                children: [
+                  const Text(
+                    'Please use a Web3 supported browser.',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Color.fromARGB(255, 255, 0, 0),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  GradientButton(
+                    onPressed: () => context.read<MetaMaskProvider>().connect(),
+                    buttonText: "Connect",
+                  ),
+                ],
               );
             }
             return SingleChildScrollView(

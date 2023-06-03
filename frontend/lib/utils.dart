@@ -1,13 +1,14 @@
 library utils;
 
 import 'dart:convert';
-import 'package:hex/hex.dart';
-import 'package:convert/convert.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web3/flutter_web3.dart';
 import 'package:crypto/crypto.dart';
 import 'package:yaml/yaml.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
+import 'common/gradient_button.dart';
+import 'common/pallete.dart';
 
 String patientRegistryContractJsonPath =
     'contracts/PatientRegistryContract.abi';
@@ -131,4 +132,41 @@ Future<List<String>> fetchMedicalHashes(employee_id) async {
   } else {
     throw Exception('Failed to load medical hashes');
   }
+}
+
+Future<void> showDialogCustom(BuildContext context, String infoMessage) async {
+  return showDialog<void>(
+    context: context,
+    barrierDismissible: false, // user must tap button to close dialog
+    builder: (BuildContext context) {
+      return AlertDialog(
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              SelectableText(
+                infoMessage,
+                style: TextStyle(
+                  color: Pallete.whiteColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          Center(
+            child: GradientButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              buttonText: 'OK',
+            ),
+          ),
+        ],
+        backgroundColor: Pallete.backgroundColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      );
+    },
+  );
 }

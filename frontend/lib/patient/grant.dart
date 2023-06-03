@@ -66,7 +66,7 @@ class _GrantAccessState extends State<GrantAccess> {
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               TextFormField(
                 decoration: InputDecoration(

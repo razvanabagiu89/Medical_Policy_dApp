@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/utils.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../common/gradient_button.dart';
@@ -36,9 +37,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
     if (response.statusCode == 201) {
       Map<String, dynamic> jsonResponse = jsonDecode(response.body);
       String institutionPassword = jsonResponse['password'].toString();
-      print(institutionPassword);
+      showDialogCustom(context,
+          'Institution password ${institutionPassword}\nDo not share it with anyone!');
     } else {
-      print("Error: ${response.body}");
+      showDialogCustom(
+          context, 'Error creating institution\nPlease try again later');
     }
   }
 
@@ -58,9 +61,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
 
     if (response.statusCode == 200) {
-      print('Institution removed successfully');
+      showDialogCustom(context, 'Institution removed successfully');
     } else {
-      print("Error: ${response.body}");
+      showDialogCustom(context, "Error removing institution: ${response.body}");
     }
   }
 
@@ -70,7 +73,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       body: Center(
         child: SingleChildScrollView(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -88,23 +91,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
               InputField(
                 labelText: 'Enter institution username',
                 controller: addInstitutionUsernameController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a valid username';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 15),
               InputField(
                 labelText: 'Enter institution CIF',
                 controller: institutionCIFController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a valid CIF';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 20),
               GradientButton(
@@ -117,12 +108,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
               InputField(
                 labelText: 'Enter institution username',
                 controller: removeInstitutionUsernameController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a valid username';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 20),
               GradientButton(
