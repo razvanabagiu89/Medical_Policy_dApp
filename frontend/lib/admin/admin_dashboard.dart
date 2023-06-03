@@ -21,6 +21,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Future<void> addInstitution(BuildContext context) async {
     final String addInstitutionUsername = addInstitutionUsernameController.text;
     final String institutionCIF = institutionCIFController.text;
+    if (addInstitutionUsername.isEmpty || institutionCIF.isEmpty) {
+      showDialogCustom(context,
+          "Username or CIF can't be empty. Please enter valid credentials.");
+      return;
+    }
     ////////////////////////// backend //////////////////////////
     final url = 'http://localhost:5000/api/institution/add';
     final response = await http.post(

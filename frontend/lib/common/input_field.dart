@@ -25,6 +25,12 @@ class _InputFieldState extends State<InputField> {
       child: TextFormField(
         controller: widget.controller,
         autovalidateMode: AutovalidateMode.onUserInteraction,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please enter valid text';
+          }
+          return null;
+        },
         decoration: InputDecoration(
           contentPadding: const EdgeInsets.all(27),
           errorStyle: const TextStyle(color: Colors.red, fontSize: 15),

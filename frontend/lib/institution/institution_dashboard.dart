@@ -27,6 +27,11 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
   Future<void> addEmployee(BuildContext context) async {
     final String addEmployeeUsername = addEmployeeUsernameController.text;
     final String employeeFullName = employeeFullNameController.text;
+    if (addEmployeeUsername.isEmpty || employeeFullName.isEmpty) {
+      showDialogCustom(context,
+          "Username or name can't be empty. Please enter valid values.");
+      return;
+    }
     final userModel = context.read<UserProvider>();
     final id = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
@@ -56,6 +61,11 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
 
   Future<void> removeEmployee(BuildContext context) async {
     final String removeEmployeeUsername = removeEmployeeUsernameController.text;
+    if (removeEmployeeUsername.isEmpty) {
+      showDialogCustom(
+          context, "Username can't be empty. Please enter valid values.");
+      return;
+    }
     final userModel = context.read<UserProvider>();
     final id = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
@@ -81,6 +91,11 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
   Future<void> changePassword(BuildContext context) async {
     final String oldPassword = oldPasswordController.text;
     final String newPassword = newPasswordController.text;
+    if (oldPassword.isEmpty || newPassword.isEmpty) {
+      showDialogCustom(context,
+          "Old password or new password can't be empty. Please enter valid values.");
+      return;
+    }
     final userModel = context.read<UserProvider>();
     final username = userModel.getUsername();
     final type = userModel.getUserType();

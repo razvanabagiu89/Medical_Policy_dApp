@@ -21,6 +21,11 @@ class _RegistrationState extends State<Registration> {
   Future<void> _sendDataToBackend(BuildContext context) async {
     final String username = _usernameController.text;
     final String password = _passwordController.text;
+    if (username.isEmpty || password.isEmpty) {
+      showDialogCustom(context,
+          "Username or password can't be empty. Please enter valid credentials.");
+      return;
+    }
     var passwordHash = sha256.convert(utf8.encode(password)).toString();
     final String patientAddress =
         context.read<MetaMaskProvider>().currentAddress;

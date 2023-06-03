@@ -31,6 +31,11 @@ class _LoginState extends State<Login> {
   Future<void> _sendDataToBackend(BuildContext context) async {
     final String username = usernameController.text;
     final String password = passwordController.text;
+    if (username.isEmpty || password.isEmpty) {
+      showDialogCustom(context,
+          "Username or password can't be empty. Please enter valid credentials.");
+      return;
+    }
     var passwordHash = sha256.convert(utf8.encode(password)).toString();
 
     var response;
