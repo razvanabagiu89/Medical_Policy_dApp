@@ -21,13 +21,13 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
   String _selectedUserType = 'patient';
 
   Future<void> _sendDataToBackend(BuildContext context) async {
-    final String username = _usernameController.text;
-    final String password = _passwordController.text;
+    final String username = usernameController.text;
+    final String password = passwordController.text;
     var passwordHash = sha256.convert(utf8.encode(password)).toString();
 
     var response;
@@ -145,12 +145,12 @@ class _LoginState extends State<Login> {
                     ),
                     const SizedBox(height: 15),
                     InputField(
-                      controller: _usernameController,
+                      controller: usernameController,
                       labelText: 'Username',
                     ),
                     const SizedBox(height: 15),
                     PasswordField(
-                      controller: _passwordController,
+                      controller: passwordController,
                       labelText: 'Password',
                     ),
                     const SizedBox(height: 15),

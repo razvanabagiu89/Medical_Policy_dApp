@@ -10,16 +10,16 @@ class AdminDashboard extends StatefulWidget {
 }
 
 class _AdminDashboardState extends State<AdminDashboard> {
-  final GlobalKey<FormState> _addFormKey = GlobalKey<FormState>();
-  final GlobalKey<FormState> _removeFormKey = GlobalKey<FormState>();
-  final TextEditingController addInstitutionUsername = TextEditingController();
-  final TextEditingController removeInstitutionUsername =
+  final TextEditingController addInstitutionUsernameController =
       TextEditingController();
-  final TextEditingController institutionCIF = TextEditingController();
+  final TextEditingController removeInstitutionUsernameController =
+      TextEditingController();
+  final TextEditingController institutionCIFController =
+      TextEditingController();
 
   Future<void> addInstitution(BuildContext context) async {
-    final String addInstitutionUsername = this.addInstitutionUsername.text;
-    final String institutionCIF = this.institutionCIF.text;
+    final String addInstitutionUsername = addInstitutionUsernameController.text;
+    final String institutionCIF = institutionCIFController.text;
     ////////////////////////// backend //////////////////////////
     final url = 'http://localhost:5000/api/institution/add';
     final response = await http.post(
@@ -44,7 +44,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   Future<void> removeInstitution(BuildContext context) async {
     final String removeInstitutionUsername =
-        this.removeInstitutionUsername.text;
+        removeInstitutionUsernameController.text;
     ////////////////////////// backend //////////////////////////
     final url = 'http://localhost:5000/api/institution/remove';
     final response = await http.post(
@@ -67,12 +67,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: Center(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+              ),
+              const SizedBox(height: 15),
               const Text(
                 'Admin Dashboard',
                 style: TextStyle(
@@ -83,7 +87,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               const SizedBox(height: 15),
               InputField(
                 labelText: 'Enter institution username',
-                controller: addInstitutionUsername,
+                controller: addInstitutionUsernameController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a valid username';
@@ -94,7 +98,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               const SizedBox(height: 15),
               InputField(
                 labelText: 'Enter institution CIF',
-                controller: institutionCIF,
+                controller: institutionCIFController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a valid CIF';
@@ -105,16 +109,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
               const SizedBox(height: 20),
               GradientButton(
                 onPressed: () async {
-                  if (_addFormKey.currentState!.validate()) {
-                    await addInstitution(context);
-                  }
+                  await addInstitution(context);
                 },
                 buttonText: 'Add Institution',
               ),
               const SizedBox(height: 20),
               InputField(
                 labelText: 'Enter institution username',
-                controller: removeInstitutionUsername,
+                controller: removeInstitutionUsernameController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a valid username';
@@ -125,9 +127,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               const SizedBox(height: 20),
               GradientButton(
                 onPressed: () async {
-                  if (_removeFormKey.currentState!.validate()) {
-                    await removeInstitution(context);
-                  }
+                  await removeInstitution(context);
                 },
                 buttonText: 'Remove Institution',
               ),
