@@ -1,11 +1,10 @@
-import 'package:frontend/admin_dashboard.dart';
-
 import 'metamask_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'login_and_registration.dart';
+import 'login_signup_screen/auth_page.dart';
 import 'user_provider.dart';
 import 'utils.dart';
+import 'common/pallete.dart';
 
 void main() {
   runApp(MyApp());
@@ -25,11 +24,11 @@ class MyApp extends StatelessWidget {
             create: (context) => MetaMaskProvider()..start()),
       ],
       child: MaterialApp(
-        title: 'My App',
-        home: LoginAndRegistration(),
-        routes: {
-          '/admin': (context) => AdminDashboard(),
-        },
+        title: 'Medd dApp',
+        theme: ThemeData.dark().copyWith(
+          scaffoldBackgroundColor: Pallete.backgroundColor,
+        ),
+        home: AuthPage(),
       ),
     );
   }

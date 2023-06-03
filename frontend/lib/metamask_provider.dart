@@ -27,6 +27,17 @@ class MetaMaskProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> disconnect() async {
+    if (isEnabled) {
+      try {
+        await ethereum!.requestAccount();
+        reset();
+      } catch (e) {
+        print(e);
+      }
+    }
+  }
+
   reset() {
     currentAddress = "";
     currentChain = -1;
