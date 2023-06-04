@@ -632,5 +632,47 @@ def get_requests(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
+@app.route("/get_db_institutions", methods=["GET"])
+def get_db_institutions():
+    institutions = entities.find({"type": "institution"})
+    result = []
+    for institution in institutions:
+        result.append({"username": institution["username"], "ID": institution["ID"]})
+    return jsonify(result), 200
+
+
+@app.route("/get_blockchain_institutions", methods=["GET"])
+def get_blockchain_institutions():
+    result = []
+    for id in range(
+        institution_registry_contract.functions.getInstitutionCount().call()
+    ):
+        institution = institution_registry_contract.functions.getInstitutionById(
+            id
+        ).call()
+        result.append(
+            {
+                "name": institution[0].decode("utf-8").rstrip("\x00"),
+                "id": institution[1],
+            }
+        )
+    return jsonify(result), 200
+
+
+@app.route("/get_employees", methods=["GET"])
+def get_employees():
+    employees = entities.find({"type": "employee"})
+    result = []
+    for employee in employees:
+        result.append(
+            {
+                "username": employee["username"],
+                "ID": employee["ID"],
+                "full_name": employee["full_name"],
+            }
+        )
+    return jsonify(result), 200
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, threaded=True)

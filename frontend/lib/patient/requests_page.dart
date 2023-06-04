@@ -22,7 +22,7 @@ class _RequestsPageState extends State<RequestsPage> {
     final userModel = context.read<UserProvider>();
     final id = userModel.getUserID();
     final response = await http
-        .get(Uri.parse('http://localhost:5000/api/patient/$id/requests'));
+        .get(Uri.parse('http://localhost:8000/api/patient/$id/requests'));
 
     if (response.statusCode == 200) {
       List<dynamic> jsonResponse = jsonDecode(response.body)['requests'];

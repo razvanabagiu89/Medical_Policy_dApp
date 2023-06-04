@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../common/gradient_button.dart';
 import '../common/input_field.dart';
+import 'compare_institutions.dart';
 
 class AdminDashboard extends StatefulWidget {
   @override
@@ -27,7 +28,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       return;
     }
     ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:5000/api/institution/add';
+    final url = 'http://localhost:8000/api/institution/add';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{
@@ -54,7 +55,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final String removeInstitutionUsername =
         removeInstitutionUsernameController.text;
     ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:5000/api/institution/remove';
+    final url = 'http://localhost:8000/api/institution/remove';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{
@@ -120,6 +121,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   await removeInstitution(context);
                 },
                 buttonText: 'Remove Institution',
+              ),
+              const SizedBox(height: 20),
+              GradientButton(
+                onPressed: () async {
+                  await showModalBottomSheet<void>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return CompareInstitutions();
+                    },
+                  );
+                },
+                buttonText: 'Show all institutions',
               ),
             ],
           ),

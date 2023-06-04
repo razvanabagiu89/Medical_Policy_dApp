@@ -34,7 +34,7 @@ class _RevokeAccessState extends State<RevokeAccess> {
         'getPatientPolicyAllowedByMedicalRecordHash',
         [patientAddress, hexStringToUint8List(_fileHash)]);
     ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:5000/api/patient/$patientId/revoke';
+    final url = 'http://localhost:8000/api/patient/$patientId/revoke';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{

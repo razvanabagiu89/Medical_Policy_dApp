@@ -7,6 +7,7 @@ import '../utils.dart';
 import 'show_documents.dart';
 import '../common/input_field.dart';
 import '../common/gradient_button.dart';
+import '../common/password_field.dart';
 
 class EmployeeDashboard extends StatefulWidget {
   const EmployeeDashboard({Key? key}) : super(key: key);
@@ -19,6 +20,8 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
   final TextEditingController patientUsernameController =
       TextEditingController();
   final TextEditingController filehashController = TextEditingController();
+  final TextEditingController oldPasswordController = TextEditingController();
+  final TextEditingController newPasswordController = TextEditingController();
   late Future<List<String>> futureMedicalHashes;
   String employeeId = '';
 
@@ -33,7 +36,7 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
     final userModel = context.read<UserProvider>();
     final id = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:5000/api/employee/$id/request_access';
+    final url = 'http://localhost:8000/api/employee/$id/request_access';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{
@@ -96,12 +99,33 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
                   final userModel = context.read<UserProvider>();
                   employeeId = userModel.getUserID();
                   futureMedicalHashes = fetchMedicalHashes(employeeId);
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) =>
-                        ShowDocuments(futureMedicalHashes: futureMedicalHashes),
-                  ));
+                  await showModalBottomSheet<void>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return ShowDocuments(
+                          futureMedicalHashes: futureMedicalHashes);
+                    },
+                  );
                 },
                 buttonText: 'Show Documents',
+              ),
+              const SizedBox(height: 20),
+              PasswordField(
+                labelText: 'Enter old password',
+                controller: oldPasswordController,
+              ),
+              const SizedBox(height: 15),
+              PasswordField(
+                labelText: 'Enter new password',
+                controller: newPasswordController,
+              ),
+              const SizedBox(height: 20),
+              GradientButton(
+                onPressed: () async {
+                  await changePassword(
+                      context, oldPasswordController, newPasswordController);
+                },
+                buttonText: 'Change your password',
               ),
             ],
           ),

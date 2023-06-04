@@ -8,6 +8,7 @@ import 'package:crypto/crypto.dart';
 import '../common/input_field.dart';
 import '../common/password_field.dart';
 import '../common/gradient_button.dart';
+import 'show_employees.dart';
 
 class InstitutionDashboard extends StatefulWidget {
   @override
@@ -35,7 +36,7 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
     final userModel = context.read<UserProvider>();
     final id = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:5000/api/$id/employee/add';
+    final url = 'http://localhost:8000/api/$id/employee/add';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{
@@ -69,7 +70,7 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
     final userModel = context.read<UserProvider>();
     final id = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:5000/api/$id/employee/remove';
+    final url = 'http://localhost:8000/api/$id/employee/remove';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{
@@ -85,40 +86,6 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
     } else {
       showDialogCustom(
           context, 'Error removing employee\nPlease try again later');
-    }
-  }
-
-  Future<void> changePassword(BuildContext context) async {
-    final String oldPassword = oldPasswordController.text;
-    final String newPassword = newPasswordController.text;
-    if (oldPassword.isEmpty || newPassword.isEmpty) {
-      showDialogCustom(context,
-          "Old password or new password can't be empty. Please enter valid values.");
-      return;
-    }
-    final userModel = context.read<UserProvider>();
-    final username = userModel.getUsername();
-    final type = userModel.getUserType();
-    ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:5000/api/change_password';
-    final response = await http.post(
-      Uri.parse(url),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(<String, String>{
-        'username': username,
-        'old_password': sha256.convert(utf8.encode(oldPassword)).toString(),
-        'new_password': sha256.convert(utf8.encode(newPassword)).toString(),
-        'type': type,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      showDialogCustom(context, 'Password changed successfully');
-    } else {
-      showDialogCustom(
-          context, 'Error changing password\nPlease try again later');
     }
   }
 
@@ -157,7 +124,7 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
                 onPressed: () async {
                   await addEmployee(context);
                 },
-                buttonText: 'Add',
+                buttonText: 'Add employee',
               ),
               const SizedBox(height: 20),
               InputField(
@@ -169,7 +136,7 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
                 onPressed: () async {
                   await removeEmployee(context);
                 },
-                buttonText: 'Remove',
+                buttonText: 'Remove employee',
               ),
               const SizedBox(height: 20),
               PasswordField(
@@ -184,9 +151,22 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
               const SizedBox(height: 20),
               GradientButton(
                 onPressed: () async {
-                  await changePassword(context);
+                  await changePassword(
+                      context, oldPasswordController, newPasswordController);
                 },
-                buttonText: 'Change Password',
+                buttonText: 'Change your password',
+              ),
+              const SizedBox(height: 20),
+              GradientButton(
+                onPressed: () async {
+                  await showModalBottomSheet<void>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return ShowEmployees();
+                    },
+                  );
+                },
+                buttonText: 'Show all employees',
               ),
             ],
           ),

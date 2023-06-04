@@ -10,7 +10,7 @@ class ShowAccessesScreen extends StatelessWidget {
     final userModel = context.read<UserProvider>();
     final patientId = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:5000/api/patient/$patientId/all_policies';
+    final url = 'http://localhost:8000/api/patient/$patientId/all_policies';
     final response = await http.get(
       Uri.parse(url),
       headers: <String, String>{

@@ -43,7 +43,7 @@ class AddMedicalRecord extends StatelessWidget {
 
       final response = await http.post(
         Uri.parse(
-            'http://localhost:5000/api/patient/$patientId/medical_record'),
+            'http://localhost:8000/api/patient/$patientId/medical_record'),
         headers: {'Content-Type': 'application/json'},
         body: requestBody,
       );

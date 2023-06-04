@@ -9,33 +9,33 @@ contract InstitutionRegistryContract is Ownable {
         uint id;
     }
 
-    mapping(uint => Institution) public institutions;
-    mapping(bytes32 => uint) private nameToId;
+    Institution[] public institutions;
 
     function addInstitution(bytes32 name, uint id) public onlyOwner {
-        require(
-            institutions[id].id == 0,
-            "Institution with this ID already exists"
-        );
-        require(
-            nameToId[name] == 0,
-            "Institution with this name already exists"
-        );
-
-        Institution memory newInstitution = Institution({name: name, id: id});
-
-        institutions[id] = newInstitution;
-        nameToId[name] = id;
+        institutions.push(Institution({name: name, id: id}));
     }
 
-    function deleteInstitution(bytes32 name) public onlyOwner {
-        uint id = nameToId[name];
-        require(
-            institutions[id].id != 0,
-            "No institution with this name exists"
-        );
+    function deleteInstitution(uint id) public onlyOwner {
+        for (uint i = 0; i < institutions.length; i++) {
+            if (institutions[i].id == id) {
+                // Remove institution and shift array
+                for (uint j = i; j < institutions.length - 1; j++) {
+                    institutions[j] = institutions[j + 1];
+                }
+                // Decrease array size
+                institutions.pop();
+                break;
+            }
+        }
+    }
 
-        delete institutions[id];
-        delete nameToId[name];
+    function getInstitutionCount() public view returns (uint256) {
+        return institutions.length;
+    }
+
+    function getInstitutionById(
+        uint index
+    ) public view returns (bytes32, uint) {
+        return (institutions[index].name, institutions[index].id);
     }
 }

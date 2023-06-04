@@ -9,6 +9,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'common/gradient_button.dart';
 import 'common/pallete.dart';
+import 'package:provider/provider.dart';
+import '../user_provider.dart';
 
 String patientRegistryContractJsonPath =
     'contracts/PatientRegistryContract.abi';
@@ -115,7 +117,7 @@ Uint8List hexStringToUint8List(String hexString) {
 }
 
 Future<List<String>> fetchMedicalHashes(employee_id) async {
-  final url = 'http://localhost:5000/api/employee/$employee_id/show_documents';
+  final url = 'http://localhost:8000/api/employee/$employee_id/show_documents';
   final response = await http.get(
     Uri.parse(url),
     headers: <String, String>{
@@ -169,4 +171,41 @@ Future<void> showDialogCustom(BuildContext context, String infoMessage) async {
       );
     },
   );
+}
+
+Future<void> changePassword(
+    BuildContext context,
+    TextEditingController oldPasswordController,
+    TextEditingController newPasswordController) async {
+  final String oldPassword = oldPasswordController.text;
+  final String newPassword = newPasswordController.text;
+  if (oldPassword.isEmpty || newPassword.isEmpty) {
+    showDialogCustom(context,
+        "Old password or new password can't be empty. Please enter valid values.");
+    return;
+  }
+  final userModel = context.read<UserProvider>();
+  final username = userModel.getUsername();
+  final type = userModel.getUserType();
+  ////////////////////////// backend //////////////////////////
+  final url = 'http://localhost:8000/api/change_password';
+  final response = await http.post(
+    Uri.parse(url),
+    headers: <String, String>{
+      'Content-Type': 'application/json',
+    },
+    body: jsonEncode(<String, String>{
+      'username': username,
+      'old_password': sha256.convert(utf8.encode(oldPassword)).toString(),
+      'new_password': sha256.convert(utf8.encode(newPassword)).toString(),
+      'type': type,
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    showDialogCustom(context, 'Password changed successfully');
+  } else {
+    showDialogCustom(
+        context, 'Error changing password\nPlease try again later');
+  }
 }

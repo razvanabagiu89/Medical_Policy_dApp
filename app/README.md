@@ -20,4 +20,5 @@ or
 
 4. export PYTHONPATH="$PWD"
 
-5. python3 app.py
+5. uwsgi --http 127.0.0.1:8000 --master -p 2 -w app:app
+just dont: python3 app.py

@@ -20,7 +20,7 @@ class AddWalletState extends State<AddWallet> {
     final patientId = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
     // check if this wallet is already authorized
-    final url = 'http://localhost:5000/api/patient/$patientId/wallet';
+    final url = 'http://localhost:8000/api/patient/$patientId/wallet';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{

@@ -41,7 +41,7 @@ class _LoginState extends State<Login> {
     var response;
     if (username == 'admin') {
       response = await http.post(
-        Uri.parse('http://127.0.0.1:5000/api/login'),
+        Uri.parse('http://127.0.0.1:8000/api/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': username,
@@ -50,7 +50,7 @@ class _LoginState extends State<Login> {
       );
     } else {
       response = await http.post(
-        Uri.parse('http://127.0.0.1:5000/api/login'),
+        Uri.parse('http://127.0.0.1:8000/api/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': username,

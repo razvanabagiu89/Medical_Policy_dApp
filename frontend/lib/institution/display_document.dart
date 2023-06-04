@@ -24,7 +24,7 @@ class _DisplayDocumentState extends State<DisplayDocument> {
 
   Future<void> _fetchFile() async {
     final response = await http.get(
-        Uri.parse('http://localhost:5000/api/get_file/${widget.medicalHash}'));
+        Uri.parse('http://localhost:8000/api/get_file/${widget.medicalHash}'));
 
     if (response.statusCode == 200) {
       String fileBase64 = jsonDecode(response.body)['filedata'];
@@ -41,10 +41,21 @@ class _DisplayDocumentState extends State<DisplayDocument> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Display Document')),
+      appBar: AppBar(
+        title: Text('Document Display'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: _loading
           ? Center(child: CircularProgressIndicator())
-          : Center(child: HtmlWidget(_htmlContent!)),
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: HtmlWidget(_htmlContent!),
+              ),
+            ),
     );
   }
 }
