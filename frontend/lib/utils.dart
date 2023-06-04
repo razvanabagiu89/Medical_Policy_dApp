@@ -98,12 +98,10 @@ List<int> convertStringToBytes(String input) {
   List<int> bytes = utf8.encode(input);
 
   if (bytes.length < 32) {
-    print("NO MORE THAN 32 BYTES");
     // If the string is less than 32 bytes, pad with zeroes
     return List<int>.from(bytes)
       ..addAll(List<int>.filled(32 - bytes.length, 0));
   } else if (bytes.length > 32) {
-    print("YES MORE THAN 32 BYTES");
     // If the string is more than 32 bytes, truncate it
     return bytes.sublist(0, 32);
   }

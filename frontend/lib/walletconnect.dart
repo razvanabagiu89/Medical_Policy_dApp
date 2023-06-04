@@ -40,6 +40,5 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // You can now use the web3provider to interact with the blockchain
     var gasPrice = await web3provider.getGasPrice();
-    print('Gas price: $gasPrice');
   }
 }

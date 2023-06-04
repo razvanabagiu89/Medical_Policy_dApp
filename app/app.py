@@ -674,5 +674,29 @@ def get_employees():
     return jsonify(result), 200
 
 
+@app.route("/api/patient/<patient_id>/delete_request", methods=["DELETE"])
+def delete_request(patient_id):
+    req_data = request.get_json()
+    doc_id = req_data.get("employee_id")
+    document_hash = req_data.get("document_hash")
+
+    patient = db.entities.find_one({"ID": int(patient_id)})
+
+    if patient:
+        new_requests = [
+            request
+            for request in patient["requests"]
+            if not (request["ID"] == doc_id and request["document"] == document_hash)
+        ]
+
+        db.entities.update_one(
+            {"ID": int(patient_id)}, {"$set": {"requests": new_requests}}
+        )
+
+        return jsonify({"status": "success"}), 200
+    else:
+        return jsonify({"error": "patient not found"}), 404
+
+
 if __name__ == "__main__":
     app.run(debug=True, threaded=True)
