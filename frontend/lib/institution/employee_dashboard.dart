@@ -7,7 +7,8 @@ import '../utils.dart';
 import 'show_documents.dart';
 import '../common/input_field.dart';
 import '../common/gradient_button.dart';
-import '../common/password_field.dart';
+import '../common/pallete.dart';
+import '../common/change_password.dart';
 
 class EmployeeDashboard extends StatefulWidget {
   const EmployeeDashboard({Key? key}) : super(key: key);
@@ -20,8 +21,6 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
   final TextEditingController patientUsernameController =
       TextEditingController();
   final TextEditingController filehashController = TextEditingController();
-  final TextEditingController oldPasswordController = TextEditingController();
-  final TextEditingController newPasswordController = TextEditingController();
   late Future<List<String>> futureMedicalHashes;
   String employeeId = '';
 
@@ -59,12 +58,56 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final userModel = context.read<UserProvider>();
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.person),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text(
+                          'Profile',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                            color: Pallete.whiteColor,
+                          ),
+                        ),
+                        backgroundColor: Pallete.backgroundColor,
+                        contentTextStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Pallete.whiteColor,
+                        ),
+                        content: SingleChildScrollView(
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.8,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                SelectableText(
+                                    'User ID: ${userModel.getUserID()}'),
+                                SelectableText(
+                                    'Username: ${userModel.getUsername()}'),
+                                SelectableText(
+                                    'User Type: ${userModel.getUserType()}'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+              const SizedBox(height: 15),
               IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.pop(context),
@@ -99,7 +142,8 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
                 onPressed: () async {
                   final userModel = context.read<UserProvider>();
                   employeeId = userModel.getUserID();
-                  futureMedicalHashes = fetchMedicalHashes(userModel, employeeId);
+                  futureMedicalHashes =
+                      fetchMedicalHashes(userModel, employeeId);
                   await showModalBottomSheet<void>(
                     context: context,
                     builder: (BuildContext context) {
@@ -111,22 +155,16 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
                 buttonText: 'Show Documents',
               ),
               const SizedBox(height: 20),
-              PasswordField(
-                labelText: 'Enter old password',
-                controller: oldPasswordController,
-              ),
-              const SizedBox(height: 15),
-              PasswordField(
-                labelText: 'Enter new password',
-                controller: newPasswordController,
-              ),
-              const SizedBox(height: 20),
               GradientButton(
                 onPressed: () async {
-                  await changePassword(
-                      context, oldPasswordController, newPasswordController);
+                  await showModalBottomSheet<void>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return ChangePassword();
+                    },
+                  );
                 },
-                buttonText: 'Change your password',
+                buttonText: 'Change password',
               ),
             ],
           ),

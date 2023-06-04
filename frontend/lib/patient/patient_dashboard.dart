@@ -9,9 +9,10 @@ import 'add_wallet.dart';
 import 'requests_page.dart';
 import 'delete_mr.dart';
 import '../common/gradient_button.dart';
-import '../common/password_field.dart';
-import '../utils.dart';
 import '../common/custom_consumer_button.dart';
+import '../user_provider.dart';
+import '../common/pallete.dart';
+import '../common/change_password.dart';
 
 class PatientDashboard extends StatefulWidget {
   @override
@@ -19,17 +20,58 @@ class PatientDashboard extends StatefulWidget {
 }
 
 class _PatientDashboardState extends State<PatientDashboard> {
-  final TextEditingController oldPasswordController = TextEditingController();
-  final TextEditingController newPasswordController = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
+    final userModel = context.read<UserProvider>();
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.person),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text(
+                          'Profile',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                            color: Pallete.whiteColor,
+                          ),
+                        ),
+                        backgroundColor: Pallete.backgroundColor,
+                        contentTextStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Pallete.whiteColor,
+                        ),
+                        content: SingleChildScrollView(
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.8,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                SelectableText(
+                                    'User ID: ${userModel.getUserID()}'),
+                                SelectableText(
+                                    'Username: ${userModel.getUsername()}'),
+                                SelectableText(
+                                    'User Type: ${userModel.getUserType()}'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+              const SizedBox(height: 15),
               Consumer<MetaMaskProvider>(
                 builder: (context, provider, child) {
                   if (provider.isConnected) {
@@ -77,7 +119,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 buttonText: 'Add medical record',
               ),
               const SizedBox(height: 20),
-              GradientButton(
+              CustomConsumerButton(
                 onPressed: () async {
                   await showModalBottomSheet<void>(
                     context: context,
@@ -113,7 +155,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 buttonText: 'Revoke access',
               ),
               const SizedBox(height: 20),
-              CustomConsumerButton(
+              GradientButton(
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -137,7 +179,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 buttonText: 'Add wallet',
               ),
               const SizedBox(height: 20),
-              CustomConsumerButton(
+              GradientButton(
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -149,24 +191,17 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 buttonText: 'Received requests',
               ),
               const SizedBox(height: 20),
-              PasswordField(
-                labelText: 'Enter old password',
-                controller: oldPasswordController,
-              ),
-              const SizedBox(height: 15),
-              PasswordField(
-                labelText: 'Enter new password',
-                controller: newPasswordController,
-              ),
-              const SizedBox(height: 20),
               GradientButton(
                 onPressed: () async {
-                  await changePassword(
-                      context, oldPasswordController, newPasswordController);
+                  await showModalBottomSheet<void>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return ChangePassword();
+                    },
+                  );
                 },
-                buttonText: 'Change your password',
+                buttonText: 'Change password',
               ),
-              const SizedBox(height: 20),
             ],
           ),
         ),
