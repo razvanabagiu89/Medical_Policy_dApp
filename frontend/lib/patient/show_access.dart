@@ -16,6 +16,7 @@ class ShowAccessesScreen extends StatelessWidget {
       Uri.parse(url),
       headers: <String, String>{
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${userModel.getToken()}',
       },
     );
     if (response.statusCode == 200) {

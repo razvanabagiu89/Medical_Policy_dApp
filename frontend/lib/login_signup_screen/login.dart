@@ -37,8 +37,7 @@ class _LoginState extends State<Login> {
       return;
     }
     var passwordHash = sha256.convert(utf8.encode(password)).toString();
-
-    var response;
+    http.Response response;
     if (username == 'admin') {
       response = await http.post(
         Uri.parse('http://127.0.0.1:8000/api/login'),
@@ -61,7 +60,13 @@ class _LoginState extends State<Login> {
     }
 
     if (response.statusCode == 200) {
+      Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      String id = jsonResponse['id'].toString();
+      final String token = jsonResponse['access_token'];
       if (username == 'admin') {
+        final userProvider = Provider.of<UserProvider>(context, listen: false);
+        userProvider.setUser(UserModel(
+            id: id, username: username, userType: 'admin', token: token));
         Navigator.of(context)
             .push(MaterialPageRoute(builder: (context) => AdminDashboard()));
       } else {
@@ -69,12 +74,15 @@ class _LoginState extends State<Login> {
         String id = jsonResponse['id'].toString();
 
         final userProvider = Provider.of<UserProvider>(context, listen: false);
-        userProvider.setUser(
-            UserModel(id: id, username: username, userType: _selectedUserType));
+        userProvider.setUser(UserModel(
+            id: id,
+            username: username,
+            userType: _selectedUserType,
+            token: token));
 
         if (_selectedUserType == 'patient') {
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => PatientDashboard()));
+          Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => PatientDashboard()));
         } else if (_selectedUserType == 'institution') {
           Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => InstitutionDashboard()));

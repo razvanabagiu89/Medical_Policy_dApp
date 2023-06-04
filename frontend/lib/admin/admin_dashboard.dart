@@ -5,6 +5,8 @@ import 'dart:convert';
 import '../common/gradient_button.dart';
 import '../common/input_field.dart';
 import 'compare_institutions.dart';
+import '../user_provider.dart';
+import 'package:provider/provider.dart';
 
 class AdminDashboard extends StatefulWidget {
   @override
@@ -20,6 +22,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       TextEditingController();
 
   Future<void> addInstitution(BuildContext context) async {
+    final userModel = context.read<UserProvider>();
     final String addInstitutionUsername = addInstitutionUsernameController.text;
     final String institutionCIF = institutionCIFController.text;
     if (addInstitutionUsername.isEmpty || institutionCIF.isEmpty) {
@@ -33,6 +36,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       Uri.parse(url),
       headers: <String, String>{
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${userModel.getToken()}',
       },
       body: jsonEncode(<String, String>{
         'username': addInstitutionUsername,
@@ -52,6 +56,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }
 
   Future<void> removeInstitution(BuildContext context) async {
+    final userModel = context.read<UserProvider>();
     final String removeInstitutionUsername =
         removeInstitutionUsernameController.text;
     ////////////////////////// backend //////////////////////////
@@ -60,6 +65,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
       Uri.parse(url),
       headers: <String, String>{
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${userModel.getToken()}',
       },
       body: jsonEncode(<String, String>{
         'username': removeInstitutionUsername,

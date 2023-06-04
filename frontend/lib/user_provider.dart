@@ -22,4 +22,8 @@ class UserProvider extends ChangeNotifier {
   String getUserType() {
     return _user!.userType;
   }
+
+  String getToken() {
+    return _user!.token;
+  }
 }

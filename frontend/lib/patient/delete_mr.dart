@@ -39,6 +39,7 @@ class DeleteMedicalRecordState extends State<DeleteMedicalRecord> {
       Uri.parse(url),
       headers: <String, String>{
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${userModel.getToken()}',
       },
       body: jsonEncode(<String, String>{
         'patient_id': patientId,

@@ -41,6 +41,7 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
       Uri.parse(url),
       headers: <String, String>{
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${userModel.getToken()}',
       },
       body: jsonEncode(<String, String>{
         'username': addEmployeeUsername,
@@ -75,6 +76,7 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
       Uri.parse(url),
       headers: <String, String>{
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${userModel.getToken()}',
       },
       body: jsonEncode(<String, String>{
         'username': removeEmployeeUsername,

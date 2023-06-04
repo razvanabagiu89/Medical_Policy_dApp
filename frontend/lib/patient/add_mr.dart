@@ -44,7 +44,10 @@ class _AddMedicalRecordState extends State<AddMedicalRecord> {
 
     final response = await http.post(
       Uri.parse('http://localhost:8000/api/patient/$patientId/medical_record'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${userModel.getToken()}',
+      },
       body: requestBody,
     );
 

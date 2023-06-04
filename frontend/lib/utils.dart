@@ -114,12 +114,13 @@ Uint8List hexStringToUint8List(String hexString) {
   return Uint8List.fromList(intList);
 }
 
-Future<List<String>> fetchMedicalHashes(employee_id) async {
+Future<List<String>> fetchMedicalHashes(userModel, employee_id) async {
   final url = 'http://localhost:8000/api/employee/$employee_id/show_documents';
   final response = await http.get(
     Uri.parse(url),
     headers: <String, String>{
       'Content-Type': 'application/json',
+      'Authorization': 'Bearer ${userModel.getToken()}',
     },
   );
 
@@ -191,6 +192,7 @@ Future<void> changePassword(
     Uri.parse(url),
     headers: <String, String>{
       'Content-Type': 'application/json',
+      'Authorization': 'Bearer ${userModel.getToken()}',
     },
     body: jsonEncode(<String, String>{
       'username': username,

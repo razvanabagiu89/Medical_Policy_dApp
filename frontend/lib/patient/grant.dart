@@ -42,6 +42,7 @@ class _GrantAccessState extends State<GrantAccess> {
       Uri.parse(url),
       headers: <String, String>{
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${userModel.getToken()}',
       },
       body: jsonEncode(<String, String>{
         'employee_id': employeeId,

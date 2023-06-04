@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 from pymongo import MongoClient, errors, ASCENDING
 from web3 import Web3, exceptions
 from scripts.utils import *
@@ -14,7 +15,10 @@ app = Flask(__name__)
 CORS(app, origins="http://127.0.0.1:33225")
 ALLOWED_IP = "127.0.0.1"
 
+# TODO: change secret_key
 app.secret_key = app_secret_key
+app.config["JWT_SECRET_KEY"] = app_secret_key
+jwt = JWTManager(app)
 app.config["app.json.compact"] = False
 
 client = MongoClient(mongodb_host)
@@ -49,6 +53,7 @@ def check_ip():
         return "Access denied", 403
 
 
+@jwt_required()
 @app.route("/api/patient", methods=["POST"])
 def add_patient():
     patient_username = request.json["username"]
@@ -110,6 +115,7 @@ def add_patient():
     )
 
 
+@jwt_required()
 @app.route("/api/institution/add", methods=["POST"])
 def add_institution():
     institution_username = request.json["username"]
@@ -170,6 +176,7 @@ def add_institution():
         )
 
 
+@jwt_required()
 @app.route("/api/institution/remove", methods=["POST"])
 def remove_institution():
     institution_username = request.json["username"]
@@ -205,6 +212,7 @@ def remove_institution():
         )
 
 
+@jwt_required()
 @app.route("/api/<institution_CIF>/employee/add", methods=["POST"])
 def add_employee(institution_CIF):
     institution_CIF = int(institution_CIF)
@@ -258,6 +266,7 @@ def add_employee(institution_CIF):
         return jsonify({"status": "error", "message": str(e)}), 400
 
 
+@jwt_required()
 @app.route("/api/<institution_CIF>/employee/remove", methods=["POST"])
 def remove_employee(institution_CIF):
     employee_username = request.json["username"]
@@ -299,6 +308,7 @@ def login():
             jsonify({"status": "error", "message": "Invalid username or password"}),
             401,
         )
+    access_token = create_access_token(identity=username)
 
     return (
         jsonify(
@@ -306,12 +316,14 @@ def login():
                 "status": "success",
                 "message": "Login successful",
                 "id": user["ID"],
+                "access_token": access_token,
             }
         ),
         200,
     )
 
 
+@jwt_required()
 @app.route("/api/change_password", methods=["POST"])
 def change_password():
     data = request.get_json()
@@ -350,6 +362,7 @@ def change_password():
     )
 
 
+@jwt_required()
 @app.route("/api/patient/<patient_id>/wallet", methods=["POST"])
 def add_wallet(patient_id):
     patient_id = int(patient_id)
@@ -391,6 +404,7 @@ def add_wallet(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
+@jwt_required()
 @app.route("/api/patient/<patient_id>/wallet", methods=["GET"])
 def get_patient_wallets(patient_id):
     blockchain_addresses = get_patient_addresses(
@@ -410,6 +424,7 @@ def get_patient_wallets(patient_id):
         return jsonify({"error": "Data mismatch between blockchain and MongoDB"}), 500
 
 
+@jwt_required()
 @app.route("/api/patient/<patient_id>/medical_record", methods=["POST"])
 def add_medical_record(patient_id):
     patient_id = int(request.json["patient_id"])
@@ -432,6 +447,7 @@ def add_medical_record(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
+@jwt_required()
 @app.route("/api/patient/<patient_id>/delete_medical_record", methods=["POST"])
 def delete_medical_record(patient_id):
     patient_id = int(request.json["patient_id"])
@@ -451,6 +467,7 @@ def delete_medical_record(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
+@jwt_required()
 @app.route("/api/patient/<int:patient_id>/all_policies", methods=["GET"])
 def get_all_policies_for_patient(patient_id):
     patient = entities.find_one({"ID": patient_id, "type": "patient"})
@@ -493,6 +510,7 @@ def get_all_policies_for_patient(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
+@jwt_required()
 @app.route("/api/patient/<patient_id>/grant_access", methods=["POST"])
 def grant_access_to_medical_record(patient_id):
     patient_id = int(patient_id)
@@ -521,6 +539,7 @@ def grant_access_to_medical_record(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
+@jwt_required()
 @app.route("/api/patient/<patient_id>/revoke", methods=["POST"])
 def revoke_access_to_medical_record(patient_id):
     patient_id = int(patient_id)
@@ -550,6 +569,7 @@ def revoke_access_to_medical_record(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
+@jwt_required()
 @app.route("/api/employee/<employee_id>/request_access", methods=["POST"])
 def request_access(employee_id):
     employee = entities.find_one({"ID": employee_id})
@@ -585,6 +605,7 @@ def request_access(employee_id):
         return jsonify({"status": "error", "message": "Employee not found."}), 404
 
 
+@jwt_required()
 @app.route("/api/employee/<employee_id>/show_documents", methods=["GET"])
 def show_documents(employee_id):
     try:
@@ -602,6 +623,7 @@ def show_documents(employee_id):
         return jsonify({"status": "error", "message": str(e)}), 400
 
 
+@jwt_required()
 @app.route("/api/get_file/<file_name>")
 def get_pdf(file_name):
     s3 = boto3.client(
@@ -620,6 +642,7 @@ def get_pdf(file_name):
     return jsonify({"filedata": file_base64})
 
 
+@jwt_required()
 @app.route("/api/patient/<int:patient_id>/requests", methods=["GET"])
 def get_requests(patient_id):
     patient_id = int(patient_id)
@@ -632,6 +655,7 @@ def get_requests(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
+@jwt_required()
 @app.route("/get_db_institutions", methods=["GET"])
 def get_db_institutions():
     institutions = entities.find({"type": "institution"})
@@ -641,6 +665,7 @@ def get_db_institutions():
     return jsonify(result), 200
 
 
+@jwt_required()
 @app.route("/get_blockchain_institutions", methods=["GET"])
 def get_blockchain_institutions():
     result = []
@@ -659,6 +684,7 @@ def get_blockchain_institutions():
     return jsonify(result), 200
 
 
+@jwt_required()
 @app.route("/get_employees", methods=["GET"])
 def get_employees():
     employees = entities.find({"type": "employee"})
@@ -674,6 +700,7 @@ def get_employees():
     return jsonify(result), 200
 
 
+@jwt_required()
 @app.route("/api/patient/<patient_id>/delete_request", methods=["DELETE"])
 def delete_request(patient_id):
     req_data = request.get_json()

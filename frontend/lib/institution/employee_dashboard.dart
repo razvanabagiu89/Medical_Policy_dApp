@@ -41,6 +41,7 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
       Uri.parse(url),
       headers: <String, String>{
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${userModel.getToken()}',
       },
       body: jsonEncode(<String, String>{
         'patient_username': patientUsername,
@@ -98,7 +99,7 @@ class _EmployeeDashboardState extends State<EmployeeDashboard> {
                 onPressed: () async {
                   final userModel = context.read<UserProvider>();
                   employeeId = userModel.getUserID();
-                  futureMedicalHashes = fetchMedicalHashes(employeeId);
+                  futureMedicalHashes = fetchMedicalHashes(userModel, employeeId);
                   await showModalBottomSheet<void>(
                     context: context,
                     builder: (BuildContext context) {
