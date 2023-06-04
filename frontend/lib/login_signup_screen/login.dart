@@ -74,7 +74,7 @@ class _LoginState extends State<Login> {
 
         if (_selectedUserType == 'patient') {
           Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => Dashboard()));
+              .push(MaterialPageRoute(builder: (context) => PatientDashboard()));
         } else if (_selectedUserType == 'institution') {
           Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => InstitutionDashboard()));

@@ -5,6 +5,8 @@ import '../user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_web3/flutter_web3.dart';
 import '../utils.dart';
+import '../common/gradient_button.dart';
+import '../common/input_field.dart';
 
 class AddWallet extends StatefulWidget {
   @override
@@ -12,10 +14,11 @@ class AddWallet extends StatefulWidget {
 }
 
 class AddWalletState extends State<AddWallet> {
-  final _formKey = GlobalKey<FormState>();
-  String newPatientAddress = '';
+  final TextEditingController newPatientAddressController =
+      TextEditingController();
 
   Future<void> addWallet(BuildContext context) async {
+    final String newPatientAddress = newPatientAddressController.text;
     final userModel = context.read<UserProvider>();
     final patientId = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
@@ -32,7 +35,7 @@ class AddWalletState extends State<AddWallet> {
     );
 
     if (response.statusCode == 201) {
-      print("Wallet can be added");
+      showDialogCustom(context, 'Wallet is available to add');
       Map<String, dynamic> jsonResponse = jsonDecode(response.body);
       String patientAddressConverted =
           jsonResponse['new_patient_address'].toString();
@@ -43,49 +46,29 @@ class AddWalletState extends State<AddWallet> {
           .send('addWallet', [patientId, patientAddressConverted]);
       await tx.wait();
     } else {
-      print("Error: ${response.body}");
+      showDialogCustom(context, 'Error adding wallet\nPlease try again later');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Grant Access'),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
+      body: Center(
+        child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              TextFormField(
-                decoration: InputDecoration(
-                  hintText: 'Enter new wallet',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a valid wallet';
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  setState(() {
-                    newPatientAddress = value;
-                  });
-                },
+              const SizedBox(height: 15),
+              InputField(
+                labelText: 'Enter new wallet address',
+                controller: newPatientAddressController,
               ),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      await addWallet(context);
-                    }
-                  },
-                  child: Text('Add Wallet'),
-                ),
+              const SizedBox(height: 20),
+              GradientButton(
+                onPressed: () async {
+                  await addWallet(context);
+                },
+                buttonText: 'Add',
               ),
             ],
           ),

@@ -6,6 +6,8 @@ import '../metamask_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_web3/flutter_web3.dart';
 import '../utils.dart';
+import '../common/gradient_button.dart';
+import '../common/input_field.dart';
 
 class RevokeAccess extends StatefulWidget {
   @override
@@ -13,11 +15,12 @@ class RevokeAccess extends StatefulWidget {
 }
 
 class _RevokeAccessState extends State<RevokeAccess> {
-  final _formKey = GlobalKey<FormState>();
-  String _employeeId = '';
-  String _fileHash = '';
+  final TextEditingController employeeIdController = TextEditingController();
+  final TextEditingController fileHashController = TextEditingController();
 
   Future<void> revokeAccess(BuildContext context) async {
+    final String employeeId = employeeIdController.text;
+    final String fileHash = fileHashController.text;
     final patientAddress = context.read<MetaMaskProvider>().currentAddress;
     final userModel = context.read<UserProvider>();
     final patientId = userModel.getUserID();
@@ -26,13 +29,13 @@ class _RevokeAccessState extends State<RevokeAccess> {
     final contract = await getAccessPolicyContract(signer);
     final tx = await contract.send('revokeAccess', [
       patientAddress,
-      hexStringToUint8List(_fileHash),
-      stringToBytes32(_employeeId)
+      hexStringToUint8List(fileHash),
+      stringToBytes32(employeeId)
     ]);
     await tx.wait();
     List<dynamic> ids = await contract.call(
         'getPatientPolicyAllowedByMedicalRecordHash',
-        [patientAddress, hexStringToUint8List(_fileHash)]);
+        [patientAddress, hexStringToUint8List(fileHash)]);
     ////////////////////////// backend //////////////////////////
     final url = 'http://localhost:8000/api/patient/$patientId/revoke';
     final response = await http.post(
@@ -41,75 +44,44 @@ class _RevokeAccessState extends State<RevokeAccess> {
         'Content-Type': 'application/json',
       },
       body: jsonEncode(<String, String>{
-        'employee_id': _employeeId,
-        'file_hash': _fileHash,
+        'employee_id': employeeId,
+        'file_hash': fileHash,
         'patient_address': patientAddress,
       }),
     );
 
     if (response.statusCode == 200) {
-      Navigator.pop(context);
-      print("Access revoked successfully");
+      showDialogCustom(context, 'Access revoked successfully');
     } else {
-      print("Error: ${response.body}");
+      showDialogCustom(
+          context, 'Error revoking access\nPlease try again later');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Revoke Access'),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
+      body: Center(
+        child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              TextFormField(
-                decoration: InputDecoration(
-                  hintText: 'Enter employee ID',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a valid employee ID';
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  setState(() {
-                    _employeeId = value;
-                  });
-                },
+              const SizedBox(height: 15),
+              InputField(
+                labelText: 'Enter employee ID',
+                controller: fileHashController,
               ),
-              TextFormField(
-                decoration: InputDecoration(
-                  hintText: 'Enter file hash',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a valid file hash';
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  setState(() {
-                    _fileHash = value;
-                  });
-                },
+              const SizedBox(height: 15),
+              InputField(
+                labelText: 'Enter filehash',
+                controller: fileHashController,
               ),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      await revokeAccess(context);
-                    }
-                  },
-                  child: Text('Revoke Access'),
-                ),
+              const SizedBox(height: 20),
+              GradientButton(
+                onPressed: () async {
+                  await revokeAccess(context);
+                },
+                buttonText: 'Revoke',
               ),
             ],
           ),

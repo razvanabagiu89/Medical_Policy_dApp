@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+import '../common/pallete.dart';
 
 class DisplayDocument extends StatefulWidget {
   final String medicalHash;
@@ -41,12 +42,28 @@ class _DisplayDocumentState extends State<DisplayDocument> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Pallete.backgroundColor,
       appBar: AppBar(
-        title: Text('Document Display'),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Pallete.gradient1,
+                Pallete.gradient2,
+                Pallete.gradient3,
+              ],
+              begin: Alignment.bottomLeft,
+              end: Alignment.topRight,
+            ),
+          ),
+        ),
+        title: Text('${widget.medicalHash}'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        backgroundColor: Pallete.gradient3,
+        titleTextStyle: TextStyle(color: Pallete.whiteColor),
       ),
       body: _loading
           ? Center(child: CircularProgressIndicator())

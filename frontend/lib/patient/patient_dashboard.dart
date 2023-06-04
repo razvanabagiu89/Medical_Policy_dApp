@@ -8,158 +8,167 @@ import 'show_access.dart';
 import 'add_wallet.dart';
 import 'requests_page.dart';
 import 'delete_mr.dart';
+import '../common/gradient_button.dart';
+import '../common/password_field.dart';
+import '../utils.dart';
+import '../common/custom_consumer_button.dart';
 
-class Dashboard extends StatelessWidget {
+class PatientDashboard extends StatefulWidget {
+  @override
+  State<PatientDashboard> createState() => _PatientDashboardState();
+}
+
+class _PatientDashboardState extends State<PatientDashboard> {
+  final TextEditingController oldPasswordController = TextEditingController();
+  final TextEditingController newPasswordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard')),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Consumer<MetaMaskProvider>(
-              builder: (context, provider, child) {
-                if (provider.isConnected) {
-                  return Text(
-                    'Your web3 address: ${provider.currentAddress}',
-                    style: const TextStyle(fontSize: 24.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              Consumer<MetaMaskProvider>(
+                builder: (context, provider, child) {
+                  if (provider.isConnected) {
+                    return Text(
+                      'web3 address: ${provider.currentAddress}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    );
+                  } else {
+                    return const Text(
+                      'Wallet not connected, limited access',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    );
+                  }
+                },
+              ),
+              const SizedBox(height: 15),
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+              ),
+              const SizedBox(height: 15),
+              const Text(
+                'Patient Dashboard',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 50,
+                ),
+              ),
+              const SizedBox(height: 15),
+              CustomConsumerButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddMedicalRecord(),
+                    ),
                   );
-                } else {
-                  return const Text(
-                    'Wallet not connected, limited access',
-                    style: TextStyle(fontSize: 24.0),
+                },
+                buttonText: 'Add medical record',
+              ),
+              const SizedBox(height: 20),
+              GradientButton(
+                onPressed: () async {
+                  await showModalBottomSheet<void>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return DeleteMedicalRecord();
+                    },
                   );
-                }
-              },
-            ),
-            const SizedBox(height: 12.0),
-            Consumer<MetaMaskProvider>(
-              builder: (context, provider, child) {
-                return Opacity(
-                  opacity: provider.isConnected ? 1 : 0.8,
-                  child: ElevatedButton(
-                    onPressed: provider.isConnected
-                        ? () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const AddMedicalRecord(),
-                              ),
-                            );
-                          }
-                        : null,
-                    child: const Text('Add Medical Record'),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 12.0),
-            Consumer<MetaMaskProvider>(
-              builder: (context, provider, child) {
-                return Opacity(
-                  opacity: provider.isConnected ? 1 : 0.8,
-                  child: ElevatedButton(
-                    onPressed: provider.isConnected
-                        ? () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => DeleteMedicalRecord(),
-                              ),
-                            );
-                          }
-                        : null,
-                    child: const Text('Delete Medical Record'),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 12.0),
-            Consumer<MetaMaskProvider>(
-              builder: (context, provider, child) {
-                return Opacity(
-                  opacity: provider.isConnected ? 1 : 0.8,
-                  child: ElevatedButton(
-                    onPressed: provider.isConnected
-                        ? () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => GrantAccess(),
-                              ),
-                            );
-                          }
-                        : null,
-                    child: const Text('Grant Access'),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 12.0),
-            Consumer<MetaMaskProvider>(
-              builder: (context, provider, child) {
-                return Opacity(
-                  opacity: provider.isConnected ? 1 : 0.8,
-                  child: ElevatedButton(
-                    onPressed: provider.isConnected
-                        ? () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => RevokeAccess(),
-                              ),
-                            );
-                          }
-                        : null,
-                    child: const Text('Revoke Access'),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 12.0),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const ShowAccessesScreen()),
-                );
-              },
-              child: const Text('Show Accesses'),
-            ),
-            const SizedBox(height: 12.0),
-            Consumer<MetaMaskProvider>(
-              builder: (context, provider, child) {
-                return Opacity(
-                  opacity: provider.isConnected ? 1 : 0.8,
-                  child: ElevatedButton(
-                    onPressed: provider.isConnected
-                        ? () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => AddWallet(),
-                              ),
-                            );
-                          }
-                        : null,
-                    child: const Text('Add Wallet'),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 12.0),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RequestsPage()),
-                );
-              },
-              child: const Text('Received Requests'),
-            ),
-          ],
+                },
+                buttonText: 'Delete medical record',
+              ),
+              const SizedBox(height: 20),
+              CustomConsumerButton(
+                onPressed: () async {
+                  await showModalBottomSheet<void>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return GrantAccess();
+                    },
+                  );
+                },
+                buttonText: 'Grant access',
+              ),
+              const SizedBox(height: 20),
+              CustomConsumerButton(
+                onPressed: () async {
+                  await showModalBottomSheet<void>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return RevokeAccess();
+                    },
+                  );
+                },
+                buttonText: 'Revoke access',
+              ),
+              const SizedBox(height: 20),
+              CustomConsumerButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ShowAccessesScreen(),
+                    ),
+                  );
+                },
+                buttonText: 'Show accesses',
+              ),
+              const SizedBox(height: 20),
+              CustomConsumerButton(
+                onPressed: () async {
+                  await showModalBottomSheet<void>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AddWallet();
+                    },
+                  );
+                },
+                buttonText: 'Add wallet',
+              ),
+              const SizedBox(height: 20),
+              CustomConsumerButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => RequestsPage(),
+                    ),
+                  );
+                },
+                buttonText: 'Received requests',
+              ),
+              const SizedBox(height: 20),
+              PasswordField(
+                labelText: 'Enter old password',
+                controller: oldPasswordController,
+              ),
+              const SizedBox(height: 15),
+              PasswordField(
+                labelText: 'Enter new password',
+                controller: newPasswordController,
+              ),
+              const SizedBox(height: 20),
+              GradientButton(
+                onPressed: () async {
+                  await changePassword(
+                      context, oldPasswordController, newPasswordController);
+                },
+                buttonText: 'Change your password',
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );

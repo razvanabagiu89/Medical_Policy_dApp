@@ -5,6 +5,8 @@ import '../user_provider.dart';
 import 'package:provider/provider.dart';
 import '../utils.dart';
 import 'package:flutter_web3/flutter_web3.dart';
+import '../common/input_field.dart';
+import '../common/gradient_button.dart';
 
 class DeleteMedicalRecord extends StatefulWidget {
   @override
@@ -12,22 +14,24 @@ class DeleteMedicalRecord extends StatefulWidget {
 }
 
 class DeleteMedicalRecordState extends State<DeleteMedicalRecord> {
-  final _formKey = GlobalKey<FormState>();
-  String _fileHash = '';
+  final TextEditingController fileHashController = TextEditingController();
 
   Future<void> deleteMedicalRecord(BuildContext context) async {
+    final String fileHash = fileHashController.text;
+    if (fileHash.isEmpty) {
+      showDialogCustom(
+          context, "Filehash can't be empty. Please enter a valid value.");
+      return;
+    }
     final userModel = context.read<UserProvider>();
     final patientId = userModel.getUserID();
     ////////////////////////// blockchain //////////////////////////
     final signer = provider!.getSigner();
     final contract = await getPatientRegistryContract(signer);
-    List<int> medicalRecordBytes32 = hexStringToUint8List(_fileHash);
+    List<int> medicalRecordBytes32 = hexStringToUint8List(fileHash);
     final tx = await contract.send(
         'deleteMedicalRecord', [int.parse(patientId), medicalRecordBytes32]);
     await tx.wait();
-    // final tx2 = await contract
-    //     .call('getPatientMedicalRecordsHashes', [int.parse(patientId)]);
-    // print(tx2);
     ////////////////////////// backend //////////////////////////
     final url =
         'http://localhost:8000/api/patient/$patientId/delete_medical_record';
@@ -38,57 +42,38 @@ class DeleteMedicalRecordState extends State<DeleteMedicalRecord> {
       },
       body: jsonEncode(<String, String>{
         'patient_id': patientId,
-        'medical_record_hash': _fileHash,
+        'medical_record_hash': fileHash,
       }),
     );
 
     if (response.statusCode == 201) {
       Navigator.pop(context);
-      print("Medical record deleted successfully");
+      showDialogCustom(context, 'Medical record deleted successfully');
     } else {
-      print("Error: ${response.body}");
+      showDialogCustom(
+          context, 'Error deleting medical record\nPlease try again later');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Delete Medical Record'),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
+      body: Center(
+        child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              TextFormField(
-                decoration: InputDecoration(
-                  hintText: 'Enter file hash',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a valid file hash';
-                  }
-                  return null;
-                },
-                onChanged: (value) {
-                  setState(() {
-                    _fileHash = value;
-                  });
-                },
+              const SizedBox(height: 15),
+              InputField(
+                labelText: 'Enter filehash',
+                controller: fileHashController,
               ),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      await deleteMedicalRecord(context);
-                    }
-                  },
-                  child: Text('Delete Medical Record'),
-                ),
+              const SizedBox(height: 20),
+              GradientButton(
+                onPressed: () async {
+                  await deleteMedicalRecord(context);
+                },
+                buttonText: 'Delete',
               ),
             ],
           ),
