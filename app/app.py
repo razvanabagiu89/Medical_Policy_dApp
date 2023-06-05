@@ -10,6 +10,7 @@ import base64
 from io import BytesIO
 import boto3
 import hashlib
+from datetime import timedelta
 
 app = Flask(__name__)
 CORS(app, origins="http://127.0.0.1:33225")
@@ -18,6 +19,7 @@ ALLOWED_IP = "127.0.0.1"
 # TODO: change secret_key
 app.secret_key = app_secret_key
 app.config["JWT_SECRET_KEY"] = app_secret_key
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=60)
 jwt = JWTManager(app)
 app.config["app.json.compact"] = False
 
@@ -53,8 +55,8 @@ def check_ip():
         return "Access denied", 403
 
 
-@jwt_required()
 @app.route("/api/patient", methods=["POST"])
+@jwt_required()
 def add_patient():
     patient_username = request.json["username"]
     patient = entities.find_one({"username": patient_username})
@@ -115,8 +117,8 @@ def add_patient():
     )
 
 
-@jwt_required()
 @app.route("/api/institution/add", methods=["POST"])
+@jwt_required()
 def add_institution():
     institution_username = request.json["username"]
     # generate a random password for the institution of 8 characters
@@ -176,8 +178,8 @@ def add_institution():
         )
 
 
-@jwt_required()
 @app.route("/api/institution/remove", methods=["POST"])
+@jwt_required()
 def remove_institution():
     institution_username = request.json["username"]
     # blockchain
@@ -212,8 +214,8 @@ def remove_institution():
         )
 
 
-@jwt_required()
 @app.route("/api/<institution_CIF>/employee/add", methods=["POST"])
+@jwt_required()
 def add_employee(institution_CIF):
     institution_CIF = int(institution_CIF)
     institution_username = request.json["institution_username"]
@@ -266,8 +268,8 @@ def add_employee(institution_CIF):
         return jsonify({"status": "error", "message": str(e)}), 400
 
 
-@jwt_required()
 @app.route("/api/<institution_CIF>/employee/remove", methods=["POST"])
+@jwt_required()
 def remove_employee(institution_CIF):
     employee_username = request.json["username"]
     try:
@@ -323,8 +325,8 @@ def login():
     )
 
 
-@jwt_required()
 @app.route("/api/change_password", methods=["POST"])
+@jwt_required()
 def change_password():
     data = request.get_json()
     username = data.get("username")
@@ -362,8 +364,8 @@ def change_password():
     )
 
 
-@jwt_required()
 @app.route("/api/patient/<patient_id>/wallet", methods=["POST"])
+@jwt_required()
 def add_wallet(patient_id):
     patient_id = int(patient_id)
     patient = entities.find_one({"ID": patient_id})
@@ -404,8 +406,8 @@ def add_wallet(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
-@jwt_required()
 @app.route("/api/patient/<patient_id>/wallet", methods=["GET"])
+@jwt_required()
 def get_patient_wallets(patient_id):
     blockchain_addresses = get_patient_addresses(
         patient_registry_contract, int(patient_id)
@@ -424,8 +426,8 @@ def get_patient_wallets(patient_id):
         return jsonify({"error": "Data mismatch between blockchain and MongoDB"}), 500
 
 
-@jwt_required()
 @app.route("/api/patient/<patient_id>/medical_record", methods=["POST"])
+@jwt_required()
 def add_medical_record(patient_id):
     patient_id = int(request.json["patient_id"])
     patient = entities.find_one({"ID": patient_id})
@@ -447,8 +449,8 @@ def add_medical_record(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
-@jwt_required()
 @app.route("/api/patient/<patient_id>/delete_medical_record", methods=["POST"])
+@jwt_required()
 def delete_medical_record(patient_id):
     patient_id = int(request.json["patient_id"])
     patient = entities.find_one({"ID": patient_id, "type": "patient"})
@@ -467,8 +469,8 @@ def delete_medical_record(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
-@jwt_required()
 @app.route("/api/patient/<int:patient_id>/all_policies", methods=["GET"])
+@jwt_required()
 def get_all_policies_for_patient(patient_id):
     patient = entities.find_one({"ID": patient_id, "type": "patient"})
 
@@ -510,8 +512,8 @@ def get_all_policies_for_patient(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
-@jwt_required()
 @app.route("/api/patient/<patient_id>/grant_access", methods=["POST"])
+@jwt_required()
 def grant_access_to_medical_record(patient_id):
     patient_id = int(patient_id)
     patient = entities.find_one({"ID": patient_id})
@@ -539,8 +541,8 @@ def grant_access_to_medical_record(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
-@jwt_required()
 @app.route("/api/patient/<patient_id>/revoke", methods=["POST"])
+@jwt_required()
 def revoke_access_to_medical_record(patient_id):
     patient_id = int(patient_id)
     patient = entities.find_one({"ID": patient_id})
@@ -569,8 +571,8 @@ def revoke_access_to_medical_record(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
-@jwt_required()
 @app.route("/api/employee/<employee_id>/request_access", methods=["POST"])
+@jwt_required()
 def request_access(employee_id):
     employee = entities.find_one({"ID": employee_id})
 
@@ -605,8 +607,8 @@ def request_access(employee_id):
         return jsonify({"status": "error", "message": "Employee not found."}), 404
 
 
-@jwt_required()
 @app.route("/api/employee/<employee_id>/show_documents", methods=["GET"])
+@jwt_required()
 def show_documents(employee_id):
     try:
         # db
@@ -623,8 +625,8 @@ def show_documents(employee_id):
         return jsonify({"status": "error", "message": str(e)}), 400
 
 
-@jwt_required()
 @app.route("/api/get_file/<file_name>")
+@jwt_required()
 def get_pdf(file_name):
     s3 = boto3.client(
         "s3",
@@ -642,8 +644,8 @@ def get_pdf(file_name):
     return jsonify({"filedata": file_base64})
 
 
-@jwt_required()
 @app.route("/api/patient/<int:patient_id>/requests", methods=["GET"])
+@jwt_required()
 def get_requests(patient_id):
     patient_id = int(patient_id)
     patient = entities.find_one({"ID": patient_id, "type": "patient"})
@@ -655,8 +657,8 @@ def get_requests(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
-@jwt_required()
 @app.route("/get_db_institutions", methods=["GET"])
+@jwt_required()
 def get_db_institutions():
     institutions = entities.find({"type": "institution"})
     result = []
@@ -665,8 +667,8 @@ def get_db_institutions():
     return jsonify(result), 200
 
 
-@jwt_required()
 @app.route("/get_blockchain_institutions", methods=["GET"])
+@jwt_required()
 def get_blockchain_institutions():
     result = []
     for id in range(
@@ -684,8 +686,8 @@ def get_blockchain_institutions():
     return jsonify(result), 200
 
 
-@jwt_required()
 @app.route("/get_employees", methods=["GET"])
+@jwt_required()
 def get_employees():
     employees = entities.find({"type": "employee"})
     result = []
@@ -700,8 +702,8 @@ def get_employees():
     return jsonify(result), 200
 
 
-@jwt_required()
 @app.route("/api/patient/<patient_id>/delete_request", methods=["DELETE"])
+@jwt_required()
 def delete_request(patient_id):
     req_data = request.get_json()
     doc_id = req_data.get("employee_id")
