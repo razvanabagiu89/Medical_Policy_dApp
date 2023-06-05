@@ -1,5 +1,4 @@
 import 'package:frontend/common/pallete.dart';
-
 import '../metamask_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +16,7 @@ import '../common/password_field.dart';
 import '../common/dropdown.dart';
 import '../common/gradient_button.dart';
 import '../utils.dart';
+import '../common/custom_icon_button.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -40,7 +40,7 @@ class _LoginState extends State<Login> {
     http.Response response;
     if (username == 'admin') {
       response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/login'),
+        Uri.parse('http://localhost:8000/api/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': username,
@@ -49,7 +49,7 @@ class _LoginState extends State<Login> {
       );
     } else {
       response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/login'),
+        Uri.parse('http://localhost:8000/api/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'username': username,
@@ -103,72 +103,6 @@ class _LoginState extends State<Login> {
       body: SingleChildScrollView(
         child: Consumer<MetaMaskProvider>(
           builder: (context, provider, child) {
-            late final Widget connectButton;
-            bool isPatient = _selectedUserType == 'patient';
-            bool showConnectButton =
-                !provider.isConnected || !provider.isInOperatingChain;
-
-            if (provider.isConnected && provider.isInOperatingChain) {
-              connectButton = Column(
-                children: [
-                  Text(
-                    'Connected to ${provider.currentAddress}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Pallete.gradient3,
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  GradientButton(
-                    onPressed: () =>
-                        context.read<MetaMaskProvider>().disconnect(),
-                    buttonText: "Disconnect",
-                  ),
-                ],
-              );
-            } else if (provider.isConnected && !provider.isInOperatingChain) {
-              connectButton = Column(
-                children: [
-                  const Text(
-                    'Wrong chain. Please connect to ${MetaMaskProvider.operatingChain}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Color.fromARGB(255, 255, 0, 0),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  GradientButton(
-                    onPressed: () => context.read<MetaMaskProvider>().connect(),
-                    buttonText: "Connect",
-                  ),
-                ],
-              );
-            } else if (provider.isEnabled) {
-              connectButton = GradientButton(
-                onPressed: () => context.read<MetaMaskProvider>().connect(),
-                buttonText: "Connect",
-              );
-            } else {
-              connectButton = Column(
-                children: [
-                  const Text(
-                    'Please use a Web3 supported browser.',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Color.fromARGB(255, 255, 0, 0),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  GradientButton(
-                    onPressed: () => context.read<MetaMaskProvider>().connect(),
-                    buttonText: "Connect",
-                  ),
-                ],
-              );
-            }
             return SingleChildScrollView(
               child: Center(
                 child: Column(
@@ -204,8 +138,41 @@ class _LoginState extends State<Login> {
                       },
                     ),
                     const SizedBox(height: 20),
-                    if (isPatient && showConnectButton) connectButton,
-                    if (!showConnectButton) connectButton,
+                    provider.isConnected
+                        ? Column(
+                            children: [
+                              Text(
+                                'Connected to ${provider.currentAddress}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                  color: Pallete.gradient3,
+                                ),
+                              ),
+                              const SizedBox(height: 15),
+                              GradientButton(
+                                onPressed: () => context
+                                    .read<MetaMaskProvider>()
+                                    .disconnect(),
+                                buttonText: "Disconnect",
+                              ),
+                            ],
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CustomIconButton(
+                                imagePath: 'images/metamask.png',
+                                onPressed: () =>
+                                    context.read<MetaMaskProvider>().connect(),
+                              ),
+                              const SizedBox(width: 20),
+                              CustomIconButton(
+                                imagePath: 'images/walletconnect.png',
+                                onPressed: () => connectWalletConnect(),
+                              ),
+                            ],
+                          ),
                     const SizedBox(height: 20),
                     GradientButton(
                       onPressed: () => _sendDataToBackend(context),

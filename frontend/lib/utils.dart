@@ -209,3 +209,15 @@ Future<void> changePassword(
         context, 'Error changing password\nPlease try again later');
   }
 }
+
+void connectWalletConnect() async {
+  WalletConnectProvider wc = WalletConnectProvider.fromRpc(
+    {1337: 'http://localhost:8545'},
+    chainId: 1337,
+    network: 'private',
+  );
+  // Enable the session, this will toggle a QRCode Modal
+  await wc.connect();
+
+  Web3Provider web3provider = Web3Provider.fromWalletConnect(wc);
+}

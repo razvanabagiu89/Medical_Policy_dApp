@@ -56,7 +56,6 @@ def check_ip():
 
 
 @app.route("/api/patient", methods=["POST"])
-@jwt_required()
 def add_patient():
     patient_username = request.json["username"]
     patient = entities.find_one({"username": patient_username})
