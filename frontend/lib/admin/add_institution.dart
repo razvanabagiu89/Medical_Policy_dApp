@@ -29,7 +29,7 @@ class AddInstitutionState extends State<AddInstitution> {
       return;
     }
     ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:8000/api/institution/add';
+    final url = 'https://localhost:8000/api/institution/add';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{

@@ -22,7 +22,7 @@ class _ShowEmployeesState extends State<ShowEmployees> {
   Future<void> fetchEmployees() async {
     final userModel = context.read<UserProvider>();
     var response = await http.get(
-      Uri.parse('http://localhost:8000/get_employees'),
+      Uri.parse('https://localhost:8000/get_employees'),
       headers: <String, String>{
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ${userModel.getToken()}',

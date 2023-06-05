@@ -33,7 +33,7 @@ class _RegistrationState extends State<Registration> {
         context.read<MetaMaskProvider>().currentAddress;
 
     final response = await http.post(
-      Uri.parse('http://localhost:8000/api/patient'),
+      Uri.parse('https://localhost:8000/api/patient'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'username': username,
@@ -104,13 +104,13 @@ class _RegistrationState extends State<Registration> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               CustomIconButton(
-                                imagePath: 'images/metamask.png',
+                                imagePath: 'assets/images/metamask.png',
                                 onPressed: () =>
                                     context.read<MetaMaskProvider>().connect(),
                               ),
                               const SizedBox(width: 20),
                               CustomIconButton(
-                                imagePath: 'images/walletconnect.png',
+                                imagePath: 'assets/images/walletconnect.png',
                                 onPressed: () => connectWalletConnect(),
                               ),
                             ],

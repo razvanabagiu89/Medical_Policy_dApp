@@ -28,7 +28,7 @@ class _DisplayDocumentState extends State<DisplayDocument> {
   Future<void> _fetchFile() async {
     final userModel = context.read<UserProvider>();
     final response = await http.get(
-      Uri.parse('http://localhost:8000/api/get_file/${widget.medicalHash}'),
+      Uri.parse('https://localhost:8000/api/get_file/${widget.medicalHash}'),
       headers: <String, String>{
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ${userModel.getToken()}',

@@ -13,7 +13,7 @@ import hashlib
 from datetime import timedelta
 
 app = Flask(__name__)
-CORS(app, origins="http://127.0.0.1:33225")
+CORS(app, origins="https://127.0.0.1:8080")
 ALLOWED_IP = "127.0.0.1"
 
 # TODO: change secret_key

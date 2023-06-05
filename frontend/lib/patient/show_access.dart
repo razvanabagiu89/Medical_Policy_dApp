@@ -16,7 +16,7 @@ class _ShowAccessesScreenState extends State<ShowAccessesScreen> {
   Future<Map<String, dynamic>> _fetchAccesses(BuildContext context) async {
     final userModel = context.read<UserProvider>();
     final patientId = userModel.getUserID();
-    final url = 'http://localhost:8000/api/patient/$patientId/all_policies';
+    final url = 'https://localhost:8000/api/patient/$patientId/all_policies';
     final response = await http.get(
       Uri.parse(url),
       headers: <String, String>{
@@ -35,7 +35,7 @@ class _ShowAccessesScreenState extends State<ShowAccessesScreen> {
       BuildContext context, String id) async {
     final userModel = context.read<UserProvider>();
     final patientId = userModel.getUserID();
-    final url = 'http://localhost:8000/api/employee/$id/get_details';
+    final url = 'https://localhost:8000/api/employee/$id/get_details';
     final response = await http.get(
       Uri.parse(url),
       headers: <String, String>{

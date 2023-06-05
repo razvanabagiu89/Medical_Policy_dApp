@@ -23,7 +23,7 @@ class _CompareInstitutionsState extends State<CompareInstitutions> {
   Future<void> fetchInstitutions() async {
     final userModel = context.read<UserProvider>();
     var dbResponse = await http.get(
-      Uri.parse('http://localhost:8000/get_db_institutions'),
+      Uri.parse('https://localhost:8000/get_db_institutions'),
       headers: <String, String>{
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ${userModel.getToken()}',
@@ -31,7 +31,7 @@ class _CompareInstitutionsState extends State<CompareInstitutions> {
     );
 
     var blockchainResponse = await http.get(
-      Uri.parse('http://localhost:8000/get_blockchain_institutions'),
+      Uri.parse('https://localhost:8000/get_blockchain_institutions'),
       headers: <String, String>{
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ${userModel.getToken()}',

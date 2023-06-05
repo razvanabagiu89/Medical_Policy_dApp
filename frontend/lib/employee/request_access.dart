@@ -28,7 +28,7 @@ class RequestAccessState extends State<RequestAccess> {
     final userModel = context.read<UserProvider>();
     final id = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:8000/api/employee/$id/request_access';
+    final url = 'https://localhost:8000/api/employee/$id/request_access';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{

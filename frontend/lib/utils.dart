@@ -22,7 +22,7 @@ String accessPolicyContractAddress = '';
 String institutionRegistryContractAddress = '';
 
 Future<void> parseYamlFile() async {
-  String yamlString = await rootBundle.loadString('app_config.yaml');
+  String yamlString = await rootBundle.loadString('assets/app_config.yaml');
   YamlMap yamlMap = loadYaml(yamlString);
 
   patientRegistryContractAddress =
@@ -115,7 +115,7 @@ Uint8List hexStringToUint8List(String hexString) {
 }
 
 Future<List<String>> fetchMedicalHashes(userModel, employee_id) async {
-  final url = 'http://localhost:8000/api/employee/$employee_id/show_documents';
+  final url = 'https://localhost:8000/api/employee/$employee_id/show_documents';
   final response = await http.get(
     Uri.parse(url),
     headers: <String, String>{
@@ -187,7 +187,7 @@ Future<void> changePassword(
   final username = userModel.getUsername();
   final type = userModel.getUserType();
   ////////////////////////// backend //////////////////////////
-  final url = 'http://localhost:8000/api/change_password';
+  final url = 'https://localhost:8000/api/change_password';
   final response = await http.post(
     Uri.parse(url),
     headers: <String, String>{
@@ -212,7 +212,7 @@ Future<void> changePassword(
 
 void connectWalletConnect() async {
   WalletConnectProvider wc = WalletConnectProvider.fromRpc(
-    {1337: 'http://localhost:8545'},
+    {1337: 'https://localhost:8545'},
     chainId: 1337,
     network: 'private',
   );

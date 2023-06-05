@@ -26,7 +26,7 @@ class RemoveEmployeeState extends State<RemoveEmployee> {
     final userModel = context.read<UserProvider>();
     final id = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:8000/api/$id/employee/remove';
+    final url = 'https://localhost:8000/api/$id/employee/remove';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{

@@ -37,7 +37,7 @@ class _GrantAccessState extends State<GrantAccess> {
         'getPatientPolicyAllowedByMedicalRecordHash',
         [patientAddress, hexStringToUint8List(fileHash)]);
     ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:8000/api/patient/$patientId/grant_access';
+    final url = 'https://localhost:8000/api/patient/$patientId/grant_access';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{

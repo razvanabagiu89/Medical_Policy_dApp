@@ -34,7 +34,7 @@ class DeleteMedicalRecordState extends State<DeleteMedicalRecord> {
     await tx.wait();
     ////////////////////////// backend //////////////////////////
     final url =
-        'http://localhost:8000/api/patient/$patientId/delete_medical_record';
+        'https://localhost:8000/api/patient/$patientId/delete_medical_record';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{
