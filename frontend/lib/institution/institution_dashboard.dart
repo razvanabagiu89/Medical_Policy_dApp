@@ -73,7 +73,7 @@ class InstitutionDashboard extends StatelessWidget {
                   fontSize: 50,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await showModalBottomSheet<void>(
@@ -85,7 +85,7 @@ class InstitutionDashboard extends StatelessWidget {
                 },
                 buttonText: 'Add employee',
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await showModalBottomSheet<void>(
@@ -97,19 +97,7 @@ class InstitutionDashboard extends StatelessWidget {
                 },
                 buttonText: 'Remove employee',
               ),
-              const SizedBox(height: 20),
-              GradientButton(
-                onPressed: () async {
-                  await showModalBottomSheet<void>(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return ChangePassword();
-                    },
-                  );
-                },
-                buttonText: 'Change password',
-              ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await showModalBottomSheet<void>(
@@ -120,6 +108,18 @@ class InstitutionDashboard extends StatelessWidget {
                   );
                 },
                 buttonText: 'Show all employees',
+              ),
+              const SizedBox(height: 15),
+              GradientButton(
+                onPressed: () async {
+                  await showModalBottomSheet<void>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return ChangePassword();
+                    },
+                  );
+                },
+                buttonText: 'Change password',
               ),
             ],
           ),

@@ -66,12 +66,12 @@ class AddInstitutionState extends State<AddInstitution> {
                 labelText: 'Enter institution username',
                 controller: addInstitutionUsernameController,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               InputField(
                 labelText: 'Enter institution CIF',
                 controller: institutionCIFController,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await addInstitution(context);

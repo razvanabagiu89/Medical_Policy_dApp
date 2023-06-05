@@ -77,7 +77,7 @@ class _RevokeAccessState extends State<RevokeAccess> {
                 labelText: 'Enter filehash',
                 controller: fileHashController,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await revokeAccess(context);

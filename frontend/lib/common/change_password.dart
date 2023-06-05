@@ -30,7 +30,7 @@ class ChangePasswordState extends State<ChangePassword> {
                 labelText: 'Enter new password',
                 controller: newPasswordController,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await changePassword(

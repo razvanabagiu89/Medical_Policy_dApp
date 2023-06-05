@@ -70,14 +70,14 @@ class _GrantAccessState extends State<GrantAccess> {
               const SizedBox(height: 15),
               InputField(
                 labelText: 'Enter employee ID',
-                controller: fileHashController,
+                controller: employeeIdController,
               ),
               const SizedBox(height: 15),
               InputField(
                 labelText: 'Enter filehash',
                 controller: fileHashController,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await grantAccess(context);

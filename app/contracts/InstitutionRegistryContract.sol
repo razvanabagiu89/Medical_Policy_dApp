@@ -18,11 +18,9 @@ contract InstitutionRegistryContract is Ownable {
     function deleteInstitution(uint id) public onlyOwner {
         for (uint i = 0; i < institutions.length; i++) {
             if (institutions[i].id == id) {
-                // Remove institution and shift array
                 for (uint j = i; j < institutions.length - 1; j++) {
                     institutions[j] = institutions[j + 1];
                 }
-                // Decrease array size
                 institutions.pop();
                 break;
             }

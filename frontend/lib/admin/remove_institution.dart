@@ -53,7 +53,7 @@ class RemoveInstitutionState extends State<RemoveInstitution> {
                 labelText: 'Enter institution username',
                 controller: removeInstitutionUsernameController,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await removeInstitution(context);

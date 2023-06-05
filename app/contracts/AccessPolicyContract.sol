@@ -5,14 +5,13 @@ import "contracts/@openzeppelin/Ownable.sol";
 
 contract AccessPolicyContract is Ownable {
     struct AccessPolicy {
-        mapping(bytes32 => bool) institutionIDToAllowed;
-        bytes32[] institutionIDs;
-        uint256 institutionCount;
+        mapping(bytes32 => bool) employeeIDToAllowed;
+        bytes32[] employeeIDs;
+        uint256 employeeCount;
     }
 
     struct PatientPolicies {
         address owner;
-        // format: mapping(medical_record_hash => AccessPolicy)
         mapping(bytes32 => AccessPolicy) policies;
     }
 
@@ -29,7 +28,7 @@ contract AccessPolicyContract is Ownable {
     function grantAccess(
         address patientAddress,
         bytes32 medicalRecordHash,
-        bytes32 institutionID
+        bytes32 employeeID
     ) external {
         require(
             allPatientPolicies[patientAddress].owner == msg.sender,
@@ -38,18 +37,18 @@ contract AccessPolicyContract is Ownable {
         AccessPolicy storage policy = allPatientPolicies[patientAddress]
             .policies[medicalRecordHash];
 
-        if (policy.institutionIDToAllowed[institutionID] == false) {
-            policy.institutionIDToAllowed[institutionID] = true;
+        if (policy.employeeIDToAllowed[employeeID] == false) {
+            policy.employeeIDToAllowed[employeeID] = true;
             bool isDuplicate = false;
-            for (uint i = 0; i < policy.institutionIDs.length; i++) {
-                if (policy.institutionIDs[i] == institutionID) {
+            for (uint i = 0; i < policy.employeeIDs.length; i++) {
+                if (policy.employeeIDs[i] == employeeID) {
                     isDuplicate = true;
                     break;
                 }
             }
             if (!isDuplicate) {
-                policy.institutionIDs.push(institutionID);
-                policy.institutionCount++;
+                policy.employeeIDs.push(employeeID);
+                policy.employeeCount++;
             }
         }
     }
@@ -57,7 +56,7 @@ contract AccessPolicyContract is Ownable {
     function revokeAccess(
         address patientAddress,
         bytes32 medicalRecordHash,
-        bytes32 institutionID
+        bytes32 employeeID
     ) external {
         require(
             allPatientPolicies[patientAddress].owner == msg.sender,
@@ -65,7 +64,7 @@ contract AccessPolicyContract is Ownable {
         );
         allPatientPolicies[patientAddress]
             .policies[medicalRecordHash]
-            .institutionIDToAllowed[institutionID] = false;
+            .employeeIDToAllowed[employeeID] = false;
     }
 
     function getPatientOwner(
@@ -79,30 +78,30 @@ contract AccessPolicyContract is Ownable {
     function getPatientPolicyAllowedByMedicalRecordHash(
         address patientAddress,
         bytes32 medicalRecordHash
-    ) public view returns (bytes32[] memory allowedInstitutionIDs) {
+    ) public view returns (bytes32[] memory allowedemployeeIDs) {
         AccessPolicy storage policy = allPatientPolicies[patientAddress]
             .policies[medicalRecordHash];
-        uint256 count = policy.institutionCount;
+        uint256 count = policy.employeeCount;
         uint256 allowedCount = 0;
 
         for (uint256 i = 0; i < count; i++) {
-            if (policy.institutionIDToAllowed[policy.institutionIDs[i]]) {
+            if (policy.employeeIDToAllowed[policy.employeeIDs[i]]) {
                 allowedCount++;
             }
         }
 
-        allowedInstitutionIDs = new bytes32[](allowedCount);
+        allowedemployeeIDs = new bytes32[](allowedCount);
 
         uint256 index = 0;
         for (uint256 i = 0; i < count; i++) {
-            bytes32 institutionID = policy.institutionIDs[i];
+            bytes32 employeeID = policy.employeeIDs[i];
 
-            if (policy.institutionIDToAllowed[institutionID]) {
-                allowedInstitutionIDs[index] = institutionID;
+            if (policy.employeeIDToAllowed[employeeID]) {
+                allowedemployeeIDs[index] = employeeID;
                 index++;
             }
         }
 
-        return (allowedInstitutionIDs);
+        return (allowedemployeeIDs);
     }
 }

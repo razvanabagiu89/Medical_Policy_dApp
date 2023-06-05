@@ -73,7 +73,7 @@ class AdminDashboard extends StatelessWidget {
                   fontSize: 50,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await showModalBottomSheet<void>(
@@ -85,7 +85,7 @@ class AdminDashboard extends StatelessWidget {
                 },
                 buttonText: 'Add Institution',
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await showModalBottomSheet<void>(
@@ -97,7 +97,7 @@ class AdminDashboard extends StatelessWidget {
                 },
                 buttonText: 'Remove Institution',
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await showModalBottomSheet<void>(
@@ -109,7 +109,7 @@ class AdminDashboard extends StatelessWidget {
                 },
                 buttonText: 'Show all institutions',
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await showModalBottomSheet<void>(

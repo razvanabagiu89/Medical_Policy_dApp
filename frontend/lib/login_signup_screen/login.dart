@@ -108,7 +108,7 @@ class _LoginState extends State<Login> {
                 child: Column(
                   children: [
                     const SizedBox(height: 50),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 15),
                     const SizedBox(height: 15),
                     const Text(
                       'Login',
@@ -137,7 +137,7 @@ class _LoginState extends State<Login> {
                         });
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 15),
                     provider.isConnected
                         ? Column(
                             children: [
@@ -173,7 +173,7 @@ class _LoginState extends State<Login> {
                               ),
                             ],
                           ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 15),
                     GradientButton(
                       onPressed: () => _sendDataToBackend(context),
                       buttonText: 'Login',

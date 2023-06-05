@@ -67,7 +67,7 @@ class RequestAccessState extends State<RequestAccess> {
                 labelText: 'Enter employee medical hash',
                 controller: filehashController,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await requestAccess(context);

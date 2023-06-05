@@ -75,7 +75,7 @@ class EmployeeDashboard extends StatelessWidget {
                   fontSize: 50,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await showModalBottomSheet<void>(
@@ -87,7 +87,7 @@ class EmployeeDashboard extends StatelessWidget {
                 },
                 buttonText: 'Request Access',
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   final userModel = context.read<UserProvider>();
@@ -104,7 +104,7 @@ class EmployeeDashboard extends StatelessWidget {
                 },
                 buttonText: 'Show Documents',
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await showModalBottomSheet<void>(

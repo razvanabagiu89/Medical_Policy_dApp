@@ -31,8 +31,9 @@ class _ShowDocumentsState extends State<ShowDocuments> {
                   ),
                 );
               } else {
-                return ListView.builder(
+                return ListView.separated(
                   itemCount: snapshot.data!.length,
+                  separatorBuilder: (context, index) => Divider(),
                   itemBuilder: (context, index) {
                     String medicalHash = snapshot.data![index];
                     return ListTile(

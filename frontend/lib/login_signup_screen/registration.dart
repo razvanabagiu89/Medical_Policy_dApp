@@ -60,7 +60,7 @@ class _RegistrationState extends State<Registration> {
                 child: Column(
                   children: [
                     const SizedBox(height: 50),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 15),
                     const SizedBox(height: 15),
                     const Text(
                       'Register',
@@ -79,7 +79,7 @@ class _RegistrationState extends State<Registration> {
                       controller: passwordController,
                       labelText: 'Password',
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 15),
                     provider.isConnected
                         ? Column(
                             children: [
@@ -115,7 +115,7 @@ class _RegistrationState extends State<Registration> {
                               ),
                             ],
                           ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 15),
                     GradientButton(
                       onPressed: () => {
                         provider.isConnected

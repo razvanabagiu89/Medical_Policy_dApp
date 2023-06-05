@@ -118,7 +118,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 },
                 buttonText: 'Add medical record',
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               CustomConsumerButton(
                 onPressed: () async {
                   await showModalBottomSheet<void>(
@@ -130,7 +130,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 },
                 buttonText: 'Delete medical record',
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               CustomConsumerButton(
                 onPressed: () async {
                   await showModalBottomSheet<void>(
@@ -142,7 +142,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 },
                 buttonText: 'Grant access',
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               CustomConsumerButton(
                 onPressed: () async {
                   await showModalBottomSheet<void>(
@@ -154,7 +154,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 },
                 buttonText: 'Revoke access',
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () {
                   Navigator.push(
@@ -166,7 +166,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 },
                 buttonText: 'Show accesses',
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               CustomConsumerButton(
                 onPressed: () async {
                   await showModalBottomSheet<void>(
@@ -178,7 +178,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 },
                 buttonText: 'Add wallet',
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () {
                   Navigator.push(
@@ -190,7 +190,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                 },
                 buttonText: 'Received requests',
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await showModalBottomSheet<void>(

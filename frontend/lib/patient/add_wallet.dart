@@ -36,7 +36,6 @@ class AddWalletState extends State<AddWallet> {
     );
 
     if (response.statusCode == 201) {
-      showDialogCustom(context, 'Wallet is available to add');
       Map<String, dynamic> jsonResponse = jsonDecode(response.body);
       String patientAddressConverted =
           jsonResponse['new_patient_address'].toString();
@@ -46,6 +45,7 @@ class AddWalletState extends State<AddWallet> {
       final tx = await contract
           .send('addWallet', [patientId, patientAddressConverted]);
       await tx.wait();
+      showDialogCustom(context, 'Wallet added');
     } else {
       showDialogCustom(context, 'Error adding wallet\nPlease try again later');
     }
@@ -64,7 +64,7 @@ class AddWalletState extends State<AddWallet> {
                 labelText: 'Enter new wallet address',
                 controller: newPatientAddressController,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await addWallet(context);

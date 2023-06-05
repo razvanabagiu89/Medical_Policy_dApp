@@ -69,7 +69,7 @@ class DeleteMedicalRecordState extends State<DeleteMedicalRecord> {
                 labelText: 'Enter filehash',
                 controller: fileHashController,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await deleteMedicalRecord(context);

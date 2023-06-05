@@ -72,7 +72,7 @@ class AddEmployeeState extends State<AddEmployee> {
                 labelText: 'Enter employee name',
                 controller: employeeFullNameController,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await addEmployee(context);

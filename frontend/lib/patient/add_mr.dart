@@ -76,7 +76,7 @@ class _AddMedicalRecordState extends State<AddMedicalRecord> {
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => Navigator.pop(context),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 15),
                 Container(
                   height: 600.0,
                   width: 600.0,
@@ -90,7 +90,7 @@ class _AddMedicalRecordState extends State<AddMedicalRecord> {
                   ),
                   child: Stack(
                     children: [
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 15),
                       DropzoneView(
                         operation: DragOperation.copy,
                         cursor: CursorType.grab,

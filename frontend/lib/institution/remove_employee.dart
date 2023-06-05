@@ -59,7 +59,7 @@ class RemoveEmployeeState extends State<RemoveEmployee> {
                 labelText: 'Enter employee username',
                 controller: removeEmployeeUsernameController,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {
                   await removeEmployee(context);

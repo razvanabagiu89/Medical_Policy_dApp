@@ -189,6 +189,7 @@ def remove_institution():
         )
         if institution is None:
             return jsonify({"error": "Institution not found"}), 404
+
         remove_institution_helper(
             institution_registry_contract,
             int(institution.get("ID")),
@@ -278,7 +279,6 @@ def add_employee(institution_CIF):
 def remove_employee(institution_CIF):
     employee_username = request.json["username"]
     try:
-        # db
         entities.delete_one({"username": employee_username, "type": "employee"})
         print("Employee deleted:", employee_username)
         return jsonify({"status": "success"}), 200
@@ -377,11 +377,6 @@ def add_wallet(patient_id):
     if patient:
         new_patient_address = request.json["new_patient_address"]
         new_patient_address_converted = Web3.to_checksum_address(new_patient_address)
-        # db
-        entities.update_one(
-            {"ID": patient_id},
-            {"$addToSet": {"wallets": new_patient_address_converted}},
-        )
         # blockchain
         try:
             check_wallet_exists(
@@ -390,6 +385,11 @@ def add_wallet(patient_id):
                 patient_id,
             )
             create_policies(access_policy_contract, new_patient_address_converted, web3)
+            # db
+            entities.update_one(
+                {"ID": patient_id},
+                {"$addToSet": {"wallets": new_patient_address_converted}},
+            )
             print("Wallet and policy added to patient with ID:", patient_id)
             return (
                 jsonify(
@@ -527,7 +527,6 @@ def grant_access_to_medical_record(patient_id):
         file_hash = request.json["file_hash"]
         employee_id = request.json["employee_id"]
         try:
-            # db
             employee = entities.find_one({"ID": employee_id, "type": "employee"})
             if employee:
                 entities.update_one(
@@ -557,7 +556,6 @@ def revoke_access_to_medical_record(patient_id):
         employee_id = request.json["employee_id"]
 
         try:
-            # db
             employee = entities.find_one({"ID": employee_id, "type": "employee"})
             if employee:
                 entities.update_one(
@@ -585,7 +583,6 @@ def request_access(employee_id):
         patient_username = request.json["patient_username"]
         file_hash = request.json["file_hash"]
         try:
-            # db
             patient = entities.find_one(
                 {"username": patient_username, "type": "patient"}
             )
@@ -616,7 +613,6 @@ def request_access(employee_id):
 @jwt_required()
 def show_documents(employee_id):
     try:
-        # db
         employee = entities.find_one({"ID": employee_id, "type": "employee"})
         if employee:
             access_to_list = employee.get("access_to", [])
@@ -710,9 +706,8 @@ def get_employees():
 @app.route("/api/patient/<patient_id>/delete_request", methods=["DELETE"])
 @jwt_required()
 def delete_request(patient_id):
-    req_data = request.get_json()
-    doc_id = req_data.get("employee_id")
-    document_hash = req_data.get("document_hash")
+    employee_id = request.json["employee_id"]
+    document_hash = request.json["document_hash"]
 
     patient = db.entities.find_one({"ID": int(patient_id)})
 
@@ -720,7 +715,9 @@ def delete_request(patient_id):
         new_requests = [
             request
             for request in patient["requests"]
-            if not (request["ID"] == doc_id and request["document"] == document_hash)
+            if not (
+                request["ID"] == employee_id and request["document"] == document_hash
+            )
         ]
 
         db.entities.update_one(
