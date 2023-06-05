@@ -184,9 +184,15 @@ def remove_institution():
     institution_username = request.json["username"]
     # blockchain
     try:
+        # find institution by username and extract id
+        institution = entities.find_one(
+            {"username": institution_username, "type": "institution"}
+        )
+        if institution is None:
+            return jsonify({"error": "Institution not found"}), 404
         remove_institution_helper(
             institution_registry_contract,
-            string_to_bytes32(institution_username),
+            int(institution.get("ID")),
             web3,
         )
     except exceptions.ContractLogicError:
@@ -728,4 +734,4 @@ def delete_request(patient_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, threaded=True)
+    app.run(debug=True)

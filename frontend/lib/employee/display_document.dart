@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import '../common/pallete.dart';
+import '../user_provider.dart';
+import 'package:provider/provider.dart';
 
 class DisplayDocument extends StatefulWidget {
   final String medicalHash;
@@ -24,8 +26,14 @@ class _DisplayDocumentState extends State<DisplayDocument> {
   }
 
   Future<void> _fetchFile() async {
+    final userModel = context.read<UserProvider>();
     final response = await http.get(
-        Uri.parse('http://localhost:8000/api/get_file/${widget.medicalHash}'));
+      Uri.parse('http://localhost:8000/api/get_file/${widget.medicalHash}'),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${userModel.getToken()}',
+      },
+    );
 
     if (response.statusCode == 200) {
       String fileBase64 = jsonDecode(response.body)['filedata'];

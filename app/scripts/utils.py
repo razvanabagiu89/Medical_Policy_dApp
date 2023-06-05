@@ -228,10 +228,10 @@ def add_institution_helper(
 
 
 def remove_institution_helper(
-    institution_registry_contract, institution_name, web3_instance
+    institution_registry_contract, institution_id, web3_instance
 ):
     tx_hash = institution_registry_contract.functions.deleteInstitution(
-        institution_name
+        institution_id
     ).transact({"from": admin_address})
     tx_receipt = web3_instance.eth.wait_for_transaction_receipt(tx_hash)
     return tx_receipt

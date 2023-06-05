@@ -10,7 +10,7 @@ import '../user_model.dart';
 import '../user_provider.dart';
 import '../admin/admin_dashboard.dart';
 import '../institution/institution_dashboard.dart';
-import '../institution/employee_dashboard.dart';
+import '../employee/employee_dashboard.dart';
 import 'package:crypto/crypto.dart';
 import '../common/input_field.dart';
 import '../common/password_field.dart';
@@ -87,8 +87,8 @@ class _LoginState extends State<Login> {
           Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => InstitutionDashboard()));
         } else if (_selectedUserType == 'employee') {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (context) => const EmployeeDashboard()));
+          Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => EmployeeDashboard()));
         }
       }
     } else {

@@ -1,94 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/utils.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import '../user_provider.dart';
 import 'package:provider/provider.dart';
-import '../common/input_field.dart';
 import '../common/gradient_button.dart';
 import 'show_employees.dart';
 import '../common/pallete.dart';
 import '../common/change_password.dart';
+import 'add_employee.dart';
+import 'remove_employee.dart';
 
-class InstitutionDashboard extends StatefulWidget {
-  @override
-  _InstitutionDashboardState createState() => _InstitutionDashboardState();
-}
-
-class _InstitutionDashboardState extends State<InstitutionDashboard> {
-  final TextEditingController addEmployeeUsernameController =
-      TextEditingController();
-  final TextEditingController removeEmployeeUsernameController =
-      TextEditingController();
-  final TextEditingController employeeFullNameController =
-      TextEditingController();
-
-  Future<void> addEmployee(BuildContext context) async {
-    final String addEmployeeUsername = addEmployeeUsernameController.text;
-    final String employeeFullName = employeeFullNameController.text;
-    if (addEmployeeUsername.isEmpty || employeeFullName.isEmpty) {
-      showDialogCustom(context,
-          "Username or name can't be empty. Please enter valid values.");
-      return;
-    }
-    final userModel = context.read<UserProvider>();
-    final id = userModel.getUserID();
-    ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:8000/api/$id/employee/add';
-    final response = await http.post(
-      Uri.parse(url),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${userModel.getToken()}',
-      },
-      body: jsonEncode(<String, String>{
-        'username': addEmployeeUsername,
-        'full_name': employeeFullName,
-        'institution_username': userModel.getUsername(),
-      }),
-    );
-
-    if (response.statusCode == 201) {
-      Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-      String employeePassword = jsonResponse['password'].toString();
-      showDialogCustom(context,
-          'Employee password: ${employeePassword}\nDo not share it with anyone!');
-    } else {
-      showDialogCustom(
-          context, 'Error creating employee\nPlease try again later');
-    }
-  }
-
-  Future<void> removeEmployee(BuildContext context) async {
-    final String removeEmployeeUsername = removeEmployeeUsernameController.text;
-    if (removeEmployeeUsername.isEmpty) {
-      showDialogCustom(
-          context, "Username can't be empty. Please enter valid values.");
-      return;
-    }
-    final userModel = context.read<UserProvider>();
-    final id = userModel.getUserID();
-    ////////////////////////// backend //////////////////////////
-    final url = 'http://localhost:8000/api/$id/employee/remove';
-    final response = await http.post(
-      Uri.parse(url),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ${userModel.getToken()}',
-      },
-      body: jsonEncode(<String, String>{
-        'username': removeEmployeeUsername,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      showDialogCustom(context, 'Employee removed successfully');
-    } else {
-      showDialogCustom(
-          context, 'Error removing employee\nPlease try again later');
-    }
-  }
-
+class InstitutionDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final userModel = context.read<UserProvider>();
@@ -153,32 +73,27 @@ class _InstitutionDashboardState extends State<InstitutionDashboard> {
                   fontSize: 50,
                 ),
               ),
-              const SizedBox(height: 15),
-              InputField(
-                labelText: 'Enter employee username',
-                controller: addEmployeeUsernameController,
-              ),
-              const SizedBox(height: 15),
-              InputField(
-                labelText: 'Enter employee name',
-                controller: employeeFullNameController,
-              ),
               const SizedBox(height: 20),
               GradientButton(
                 onPressed: () async {
-                  await addEmployee(context);
+                  await showModalBottomSheet<void>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AddEmployee();
+                    },
+                  );
                 },
                 buttonText: 'Add employee',
               ),
               const SizedBox(height: 20),
-              InputField(
-                labelText: 'Enter employee username',
-                controller: removeEmployeeUsernameController,
-              ),
-              const SizedBox(height: 20),
               GradientButton(
                 onPressed: () async {
-                  await removeEmployee(context);
+                  await showModalBottomSheet<void>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return RemoveEmployee();
+                    },
+                  );
                 },
                 buttonText: 'Remove employee',
               ),

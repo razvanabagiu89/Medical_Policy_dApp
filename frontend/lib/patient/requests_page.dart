@@ -22,8 +22,13 @@ class _RequestsPageState extends State<RequestsPage> {
   Future<List<dynamic>> fetchRequests() async {
     final userModel = context.read<UserProvider>();
     final id = userModel.getUserID();
-    final response = await http
-        .get(Uri.parse('http://localhost:8000/api/patient/$id/requests'));
+    final response = await http.get(
+      Uri.parse('http://localhost:8000/api/patient/$id/requests'),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${userModel.getToken()}',
+      },
+    );
 
     if (response.statusCode == 200) {
       List<dynamic> jsonResponse = jsonDecode(response.body)['requests'];
@@ -40,7 +45,8 @@ class _RequestsPageState extends State<RequestsPage> {
     return http.delete(
       Uri.parse('http://localhost:8000/api/patient/$patientId/delete_request'),
       headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${userModel.getToken()}',
       },
       body: jsonEncode(<String, String>{
         'employee_id': employeeId,
