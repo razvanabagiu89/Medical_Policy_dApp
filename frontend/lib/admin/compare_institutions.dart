@@ -132,7 +132,7 @@ class _CompareInstitutionsState extends State<CompareInstitutions> {
                             child: Column(
                               children: [
                                 Text(
-                                  '${blockchainInstitution['name']}',
+                                  '${blockchainInstitution?['name'] ?? 'No data'}',
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
                                     fontSize: 20,
@@ -140,7 +140,7 @@ class _CompareInstitutionsState extends State<CompareInstitutions> {
                                   ),
                                 ),
                                 Text(
-                                  'ID: ${blockchainInstitution['id']}',
+                                  'ID: ${blockchainInstitution['id'] ?? 'No data'}',
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
                                     fontSize: 20,
