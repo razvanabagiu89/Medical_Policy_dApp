@@ -5,9 +5,14 @@ import '../user_provider.dart';
 import 'package:provider/provider.dart';
 import '../common/pallete.dart';
 
-class ShowAccessesScreen extends StatelessWidget {
+class ShowAccessesScreen extends StatefulWidget {
   const ShowAccessesScreen({Key? key}) : super(key: key);
 
+  @override
+  State<ShowAccessesScreen> createState() => _ShowAccessesScreenState();
+}
+
+class _ShowAccessesScreenState extends State<ShowAccessesScreen> {
   Future<Map<String, dynamic>> _fetchAccesses(BuildContext context) async {
     final userModel = context.read<UserProvider>();
     final patientId = userModel.getUserID();
@@ -23,6 +28,25 @@ class ShowAccessesScreen extends StatelessWidget {
       return jsonDecode(response.body)["medical_record_policies"];
     } else {
       throw Exception("Failed to load policies");
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchEmployeeDetails(
+      BuildContext context, String id) async {
+    final userModel = context.read<UserProvider>();
+    final patientId = userModel.getUserID();
+    final url = 'http://localhost:8000/api/employee/$id/get_details';
+    final response = await http.get(
+      Uri.parse(url),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${userModel.getToken()}',
+      },
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception("Failed to load employee details");
     }
   }
 
@@ -75,32 +99,56 @@ class ShowAccessesScreen extends StatelessWidget {
                                 children: [
                                   TextSpan(
                                       text: 'No granted access',
-                                      style: TextStyle(color: Colors.red))
+                                      style: TextStyle(color: Colors.red)),
                                 ],
                               ),
                             ),
                           );
                         } else {
                           var walletsMap = wallets;
-                          var walletsText = walletsMap.entries.map((entry) {
-                            var walletAddress = entry.key;
-                            var accesses = entry.value;
-                            var accessesList = accesses as List<dynamic>;
-                            return TextSpan(
-                              style: const TextStyle(color: Colors.black),
-                              children: [
-                                TextSpan(
-                                    text:
-                                        'Granted from wallet: $walletAddress\nID\'s allowed: ${accessesList.join(', ')}',
-                                    style: const TextStyle(
-                                        color: Pallete.gradient3)),
-                              ],
-                            );
-                          }).toList();
+                          var accessesList =
+                              wallets.values.expand((i) => i).toList();
                           return ListTile(
                             title: SelectableText("Record Hash: $recordHash"),
-                            subtitle:
-                                RichText(text: TextSpan(children: walletsText)),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: walletsMap.entries.map<Widget>((entry) {
+                                var walletAddress = entry.key;
+                                var accesses = entry.value;
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    RichText(
+                                      text: TextSpan(
+                                        text:
+                                            'Granted from wallet: $walletAddress\nID\'s allowed: ${accesses.join(', ')}\n',
+                                        style: const TextStyle(
+                                            color: Pallete.gradient3),
+                                      ),
+                                    ),
+                                    ...accesses.map<Widget>((id) {
+                                      return FutureBuilder<
+                                          Map<String, dynamic>>(
+                                        future:
+                                            fetchEmployeeDetails(context, id),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.hasData) {
+                                            return SelectableText(
+                                              'ID $id is ${snapshot.data!['full_name']} with username: ${snapshot.data!['username']} working for ${snapshot.data!['belongs_to']}',
+                                              style: const TextStyle(
+                                                  color: Pallete.whiteColor),
+                                            );
+                                          } else if (snapshot.hasError) {
+                                            return Text('${snapshot.error}');
+                                          }
+                                          return const CircularProgressIndicator();
+                                        },
+                                      );
+                                    }).toList(),
+                                  ],
+                                );
+                              }).toList(),
+                            ),
                           );
                         }
                       },

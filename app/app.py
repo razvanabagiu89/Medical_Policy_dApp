@@ -729,5 +729,26 @@ def delete_request(patient_id):
         return jsonify({"error": "patient not found"}), 404
 
 
+@app.route("/api/employee/<employee_id>/get_details", methods=["GET"])
+@jwt_required()
+def get_employee_details(employee_id):
+    employee = entities.find_one({"ID": employee_id})
+
+    if employee:
+        return (
+            jsonify(
+                {
+                    "status": "success",
+                    "full_name": employee["full_name"],
+                    "username": employee["username"],
+                    "belongs_to": employee["belongs_to"],
+                }
+            ),
+            200,
+        )
+    else:
+        return jsonify({"error": "user not found"}), 404
+
+
 if __name__ == "__main__":
     app.run(debug=True)
