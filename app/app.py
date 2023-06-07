@@ -338,7 +338,6 @@ def change_password():
     old_password = data.get("old_password")
     new_password = data.get("new_password")
     type = data.get("type")
-    print(type)
 
     if not username or not old_password or not new_password:
         return (
