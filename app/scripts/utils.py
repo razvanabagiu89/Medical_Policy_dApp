@@ -56,7 +56,7 @@ entities = app_config["mongodb"]["entities_collection"]
 ########################################## Smart Contracts testing variables ##########################################
 
 test_file = load_yaml_file("tests/test_config.yaml")
-admin_address = test_file["admin"]["address"]
+admin_address_test = test_file["admin"]["address"]
 patient_1_address = test_file["patients"]["patient1"]["address"]
 patient_2_address = test_file["patients"]["patient2"]["address"]
 patient_3_address = test_file["patients"]["patient3"]["address"]
@@ -70,10 +70,22 @@ institution_3_id = test_file["institutions"][2]
 def create_patient(
     patient_registry_contract, patient_id, patient_address, web3_instance
 ):
-    tx_hash = patient_registry_contract.functions.newPatient(
+    transaction = patient_registry_contract.functions.newPatient(
         patient_address, patient_id
-    ).transact({"from": admin_address})
+    ).build_transaction(
+        {
+            "chainId": chain_id,
+            "nonce": web3_instance.eth.get_transaction_count(admin_address),
+            "from": admin_address,
+        }
+    )
+
+    signed_tx = web3_instance.eth.account.sign_transaction(
+        transaction, admin_private_key
+    )
+    tx_hash = web3_instance.eth.send_raw_transaction(signed_tx.rawTransaction)
     tx_receipt = web3_instance.eth.wait_for_transaction_receipt(tx_hash)
+
     return tx_receipt
 
 
@@ -169,10 +181,22 @@ def hex_to_bytes32(input_string: str):
 
 
 def create_policies(access_policy_contract, patient_address, web3_instance):
-    tx_hash = access_policy_contract.functions.createPolicies(patient_address).transact(
-        {"from": admin_address}
+    transaction = access_policy_contract.functions.createPolicies(
+        patient_address
+    ).build_transaction(
+        {
+            "chainId": chain_id,
+            "nonce": web3_instance.eth.get_transaction_count(admin_address),
+            "from": admin_address,
+        }
     )
+
+    signed_tx = web3_instance.eth.account.sign_transaction(
+        transaction, admin_private_key
+    )
+    tx_hash = web3_instance.eth.send_raw_transaction(signed_tx.rawTransaction)
     tx_receipt = web3_instance.eth.wait_for_transaction_receipt(tx_hash)
+
     return tx_receipt
 
 
@@ -220,20 +244,45 @@ def get_patient_policy_allowed_by_medical_record_hash(
 def add_institution_helper(
     institution_registry_contract, institution_name, institution_id, web3_instance
 ):
-    tx_hash = institution_registry_contract.functions.addInstitution(
+    # Prepare the transaction
+    transaction = institution_registry_contract.functions.addInstitution(
         institution_name, institution_id
-    ).transact({"from": admin_address})
+    ).build_transaction(
+        {
+            "chainId": chain_id,
+            "nonce": web3_instance.eth.get_transaction_count(admin_address),
+            "from": admin_address,
+        }
+    )
+
+    signed_tx = web3_instance.eth.account.sign_transaction(
+        transaction, admin_private_key
+    )
+    tx_hash = web3_instance.eth.send_raw_transaction(signed_tx.rawTransaction)
     tx_receipt = web3_instance.eth.wait_for_transaction_receipt(tx_hash)
+
     return tx_receipt
 
 
 def remove_institution_helper(
     institution_registry_contract, institution_id, web3_instance
 ):
-    tx_hash = institution_registry_contract.functions.deleteInstitution(
+    transaction = institution_registry_contract.functions.deleteInstitution(
         institution_id
-    ).transact({"from": admin_address})
+    ).build_transaction(
+        {
+            "chainId": chain_id,
+            "nonce": web3_instance.eth.get_transaction_count(admin_address),
+            "from": admin_address,
+        }
+    )
+
+    signed_tx = web3_instance.eth.account.sign_transaction(
+        transaction, admin_private_key
+    )
+    tx_hash = web3_instance.eth.send_raw_transaction(signed_tx.rawTransaction)
     tx_receipt = web3_instance.eth.wait_for_transaction_receipt(tx_hash)
+
     return tx_receipt
 
 

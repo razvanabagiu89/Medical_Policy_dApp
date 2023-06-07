@@ -69,7 +69,7 @@ export PYTHONPATH="$PWD"
 Run the backend server using Gunicorn. Ensure you have the required SSL certificate and key.
 
 ```bash
-gunicorn --certfile=.localhost-ssl/localhost.crt --keyfile=.localhost-ssl/localhost.key -w 2 app:app
+gunicorn --certfile=.localhost-ssl/localhost.crt --keyfile=.localhost-ssl/localhost.key -w 2 --timeout 0 app:app
 ```
 
 ### Step 6: Build and Run Frontend

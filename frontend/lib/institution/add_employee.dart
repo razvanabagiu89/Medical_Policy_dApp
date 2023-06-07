@@ -77,7 +77,7 @@ class AddEmployeeState extends State<AddEmployee> {
                 onPressed: () async {
                   await addEmployee(context);
                 },
-                buttonText: 'Remove',
+                buttonText: 'Add',
               ),
             ],
           ),

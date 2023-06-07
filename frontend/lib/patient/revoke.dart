@@ -8,6 +8,7 @@ import 'package:flutter_web3/flutter_web3.dart';
 import '../utils.dart';
 import '../common/gradient_button.dart';
 import '../common/input_field.dart';
+import '../common/dropdown.dart';
 
 class RevokeAccess extends StatefulWidget {
   @override
@@ -16,11 +17,44 @@ class RevokeAccess extends StatefulWidget {
 
 class _RevokeAccessState extends State<RevokeAccess> {
   final TextEditingController employeeIdController = TextEditingController();
-  final TextEditingController fileHashController = TextEditingController();
+  String? fileHash = '';
+  List<String> fileHashes = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchFileHashes();
+  }
+
+  Future<void> fetchFileHashes() async {
+    final userModel = context.read<UserProvider>();
+    final patientId = userModel.getUserID();
+    final url = Uri.parse(
+        'https://localhost:8000/api/patient/$patientId/all_medical_records');
+    final response = await http.get(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${userModel.getToken()}',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> data = jsonDecode(response.body);
+      setState(() {
+        fileHashes = List<String>.from(data['all_medical_records']);
+        if (fileHashes.isNotEmpty) {
+          fileHash =
+              fileHashes[0]; // Set the first file hash as the initial value
+        }
+      });
+    } else {
+      throw Exception('Failed to load file hashes');
+    }
+  }
 
   Future<void> revokeAccess(BuildContext context) async {
     final String employeeId = employeeIdController.text;
-    final String fileHash = fileHashController.text;
     final patientAddress = context.read<MetaMaskProvider>().currentAddress;
     final userModel = context.read<UserProvider>();
     final patientId = userModel.getUserID();
@@ -29,13 +63,13 @@ class _RevokeAccessState extends State<RevokeAccess> {
     final contract = await getAccessPolicyContract(signer);
     final tx = await contract.send('revokeAccess', [
       patientAddress,
-      hexStringToUint8List(fileHash),
+      hexStringToUint8List(fileHash!),
       stringToBytes32(employeeId)
     ]);
     await tx.wait();
     List<dynamic> ids = await contract.call(
         'getPatientPolicyAllowedByMedicalRecordHash',
-        [patientAddress, hexStringToUint8List(fileHash)]);
+        [patientAddress, hexStringToUint8List(fileHash!)]);
     ////////////////////////// backend //////////////////////////
     final url = 'https://localhost:8000/api/patient/$patientId/revoke';
     final response = await http.post(
@@ -46,7 +80,7 @@ class _RevokeAccessState extends State<RevokeAccess> {
       },
       body: jsonEncode(<String, String>{
         'employee_id': employeeId,
-        'file_hash': fileHash,
+        'file_hash': fileHash!,
         'patient_address': patientAddress,
       }),
     );
@@ -62,7 +96,7 @@ class _RevokeAccessState extends State<RevokeAccess> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
+      body: Center( 
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -70,13 +104,24 @@ class _RevokeAccessState extends State<RevokeAccess> {
               const SizedBox(height: 15),
               InputField(
                 labelText: 'Enter employee ID',
-                controller: fileHashController,
+                controller: employeeIdController,
               ),
               const SizedBox(height: 15),
-              InputField(
-                labelText: 'Enter filehash',
-                controller: fileHashController,
-              ),
+              fileHashes.isEmpty
+                  ? CircularProgressIndicator()
+                  : fileHash == null
+                      ? SizedBox.shrink()
+                      : InputDropdown(
+                          value: fileHash!,
+                          items: fileHashes,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              if (newValue != null) {
+                                fileHash = newValue;
+                              }
+                            });
+                          },
+                        ),
               const SizedBox(height: 15),
               GradientButton(
                 onPressed: () async {

@@ -93,7 +93,7 @@ class EmployeeDashboard extends StatelessWidget {
                   final userModel = context.read<UserProvider>();
                   String employeeId = userModel.getUserID();
                   futureMedicalHashes =
-                      fetchMedicalHashes(userModel, employeeId);
+                      fetchEmployeeMedicalHashes(userModel, employeeId);
                   await showModalBottomSheet<void>(
                     context: context,
                     builder: (BuildContext context) {

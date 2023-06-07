@@ -20,6 +20,8 @@ String institutionRegistryContractJsonPath =
 String patientRegistryContractAddress = '';
 String accessPolicyContractAddress = '';
 String institutionRegistryContractAddress = '';
+const int ganacheChainId = 1337;
+const int goerliChainId = 5;
 
 Future<void> parseYamlFile() async {
   String yamlString = await rootBundle.loadString('assets/app_config.yaml');
@@ -114,7 +116,7 @@ Uint8List hexStringToUint8List(String hexString) {
   return Uint8List.fromList(intList);
 }
 
-Future<List<String>> fetchMedicalHashes(userModel, employee_id) async {
+Future<List<String>> fetchEmployeeMedicalHashes(userModel, employee_id) async {
   final url = 'https://localhost:8000/api/employee/$employee_id/show_documents';
   final response = await http.get(
     Uri.parse(url),
