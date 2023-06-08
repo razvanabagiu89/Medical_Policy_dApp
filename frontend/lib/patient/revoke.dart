@@ -96,7 +96,7 @@ class _RevokeAccessState extends State<RevokeAccess> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center( 
+      body: Center(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,

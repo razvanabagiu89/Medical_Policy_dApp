@@ -25,7 +25,20 @@ class _DisplayDocumentState extends State<DisplayDocument> {
     _fetchFile();
   }
 
+  @override
+  void didUpdateWidget(DisplayDocument oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.medicalHash != oldWidget.medicalHash) {
+      _fetchFile();
+    }
+  }
+
   Future<void> _fetchFile() async {
+    setState(() {
+      _loading = true;
+      _htmlContent = null;
+    });
+
     final userModel = context.read<UserProvider>();
     final response = await http.get(
       Uri.parse('https://localhost:8000/api/get_file/${widget.medicalHash}'),

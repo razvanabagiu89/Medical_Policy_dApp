@@ -516,6 +516,32 @@ def get_all_policies_for_patient(patient_id):
         return jsonify({"status": "error", "message": "Patient not found."}), 404
 
 
+@app.route("/api/patient/<int:patient_id>/all_medical_records", methods=["GET"])
+@jwt_required()
+def get_all_medical_records_for_patient(patient_id):
+    patient = entities.find_one({"ID": patient_id, "type": "patient"})
+
+    if patient:
+        file_hashes = get_patient_medical_records_hashes(
+            patient_registry_contract, patient_id
+        )
+        file_hashes = [
+            Web3.to_text(file_hash).rstrip("\x00") for file_hash in file_hashes
+        ]
+
+        return (
+            jsonify(
+                {
+                    "status": "success",
+                    "all_medical_records": file_hashes,
+                }
+            ),
+            200,
+        )
+    else:
+        return jsonify({"status": "error", "message": "Patient not found."}), 404
+
+
 @app.route("/api/patient/<patient_id>/grant_access", methods=["POST"])
 @jwt_required()
 def grant_access_to_medical_record(patient_id):

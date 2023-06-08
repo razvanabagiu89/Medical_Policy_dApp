@@ -13,6 +13,7 @@ import '../common/custom_consumer_button.dart';
 import '../user_provider.dart';
 import '../common/pallete.dart';
 import '../common/change_password.dart';
+import 'my_medical_records.dart';
 
 class PatientDashboard extends StatefulWidget {
   @override
@@ -165,6 +166,18 @@ class _PatientDashboardState extends State<PatientDashboard> {
                   );
                 },
                 buttonText: 'Show accesses',
+              ),
+              const SizedBox(height: 15),
+              GradientButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MyMedicalRecords(),
+                    ),
+                  );
+                },
+                buttonText: 'My medical records',
               ),
               const SizedBox(height: 15),
               CustomConsumerButton(
