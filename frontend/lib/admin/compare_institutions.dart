@@ -131,22 +131,35 @@ class _CompareInstitutionsState extends State<CompareInstitutions> {
                           Expanded(
                             child: Column(
                               children: [
-                                Text(
-                                  '${blockchainInstitution?['name'] ?? 'No data'}',
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    color: Pallete.whiteColor,
-                                  ),
-                                ),
-                                Text(
-                                  'ID: ${blockchainInstitution['id'] ?? 'No data'}',
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    color: Pallete.whiteColor,
-                                  ),
-                                ),
+                                (() {
+                                  final nameData =
+                                      blockchainInstitution?['name'];
+                                  final formattedName = nameData == null
+                                      ? 'N/A'.padLeft(10)
+                                      : '$nameData'.padRight(10);
+                                  return Text(
+                                    formattedName,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      color: Pallete.whiteColor,
+                                    ),
+                                  );
+                                }()),
+                                (() {
+                                  final idData = blockchainInstitution['id'];
+                                  final formattedId = idData == null
+                                      ? 'N/A'.padLeft(10)
+                                      : 'ID: $idData'.padRight(10);
+                                  return Text(
+                                    formattedId,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      color: Pallete.whiteColor,
+                                    ),
+                                  );
+                                }()),
                               ],
                             ),
                           ),
