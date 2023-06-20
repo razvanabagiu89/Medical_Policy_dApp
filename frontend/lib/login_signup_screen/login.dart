@@ -111,7 +111,7 @@ class _LoginState extends State<Login> {
                       child: Image.asset(
                         'assets/images/logo.png',
                         width: 800,
-                        height: 120,
+                        height: 160,
                       ),
                     ),
                     const Text(
