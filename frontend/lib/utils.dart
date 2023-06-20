@@ -140,7 +140,7 @@ Future<List<String>> fetchEmployeeMedicalHashes(userModel, employee_id) async {
 Future<void> showDialogCustom(BuildContext context, String infoMessage) async {
   return showDialog<void>(
     context: context,
-    barrierDismissible: false, // user must tap button to close dialog
+    barrierDismissible: false,
     builder: (BuildContext context) {
       return AlertDialog(
         content: SingleChildScrollView(
@@ -148,7 +148,7 @@ Future<void> showDialogCustom(BuildContext context, String infoMessage) async {
             children: <Widget>[
               SelectableText(
                 infoMessage,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Pallete.whiteColor,
                 ),
               ),

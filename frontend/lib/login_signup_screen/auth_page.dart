@@ -36,7 +36,7 @@ class _AuthPageState extends State<AuthPage>
       appBar: AppBar(
         backgroundColor: Pallete.gradient1,
         title: const Text(
-          'Medd dApp',
+          'Meddico',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 24,

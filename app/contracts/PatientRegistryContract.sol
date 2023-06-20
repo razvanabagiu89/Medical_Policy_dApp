@@ -11,11 +11,6 @@ contract PatientRegistryContract is Ownable {
     }
 
     mapping(uint256 => Patient) public allPatients;
-    uint256 public patientCount;
-
-    constructor() {
-        patientCount = 0;
-    }
 
     function newPatient(
         address _patientAddress,
@@ -26,7 +21,6 @@ contract PatientRegistryContract is Ownable {
         p.patientAddresses.push(_patientAddress);
         p.medicalRecordsHashes = new bytes32[](0);
         allPatients[_patientID] = p;
-        patientCount++;
     }
 
     function addMedicalRecord(

@@ -59,14 +59,18 @@ class _RegistrationState extends State<Registration> {
               child: Center(
                 child: Column(
                   children: [
-                    const SizedBox(height: 50),
-                    const SizedBox(height: 15),
-                    const SizedBox(height: 15),
+                    Center(
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 800,
+                        height: 120,
+                      ),
+                    ),
                     const Text(
                       'Register',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 50,
+                        fontSize: 35,
                       ),
                     ),
                     const SizedBox(height: 15),

@@ -93,5 +93,3 @@ openssl req -x509 -newkey rsa:4096 -keyout localhost.key -out localhost.crt -day
 ```
 
 This command will generate `localhost.key` (private key) and `localhost.crt` (certificate) files. When running the command, you will be prompted to enter some information for the certificate. You can just hit Enter to leave them as default for testing.
-
-Remember, self-signed certificate will cause browser warnings because it's not signed by any of the trusted certificate authorities included with your browser. For a production application, you must use a certificate signed by a trusted certificate authority.

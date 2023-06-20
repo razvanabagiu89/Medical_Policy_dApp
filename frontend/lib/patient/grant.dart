@@ -68,9 +68,6 @@ class _GrantAccessState extends State<GrantAccess> {
         stringToBytes32(employeeId)
       ]);
       await tx.wait();
-      List<dynamic> ids = await contract.call(
-          'getPatientPolicyAllowedByMedicalRecordHash',
-          [patientAddress, hexStringToUint8List(fileHash!)]);
     }
     ////////////////////////// backend //////////////////////////
     final url = 'https://localhost:8000/api/patient/$patientId/grant_access';

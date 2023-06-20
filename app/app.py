@@ -13,10 +13,8 @@ import hashlib
 from datetime import timedelta
 
 app = Flask(__name__)
-CORS(app, origins="https://127.0.0.1:8080")
-ALLOWED_IP = "127.0.0.1"
+CORS(app)
 
-# TODO: change secret_key
 app.secret_key = app_secret_key
 app.config["JWT_SECRET_KEY"] = app_secret_key
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(minutes=60)
@@ -46,13 +44,6 @@ access_policy_contract = get_contract(
 institution_registry_contract = get_contract(
     web3, "InstitutionRegistryContract", institution_registry_contract_address
 )
-
-
-@app.before_request
-def check_ip():
-    client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
-    if client_ip != ALLOWED_IP:
-        return "Access denied", 403
 
 
 @app.route("/api/patient", methods=["POST"])
