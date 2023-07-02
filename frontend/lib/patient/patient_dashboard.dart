@@ -72,7 +72,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
                   );
                 },
               ),
-              const SizedBox(height: 15),
               Consumer<MetaMaskProvider>(
                 builder: (context, provider, child) {
                   if (provider.isConnected) {
@@ -94,7 +93,6 @@ class _PatientDashboardState extends State<PatientDashboard> {
                   }
                 },
               ),
-              const SizedBox(height: 15),
               IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.pop(context),
