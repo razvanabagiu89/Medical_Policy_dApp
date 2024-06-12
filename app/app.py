@@ -45,6 +45,29 @@ institution_registry_contract = get_contract(
     web3, "InstitutionRegistryContract", institution_registry_contract_address
 )
 
+openai.api_key = os.environ.get("OPENAI_API_KEY")  # TODO
+
+@app.route("/api/chat", methods=["POST"])
+def chat_with_gpt():
+    data = request.get_json()
+    prompt = data.get("prompt", "")
+    if not prompt:
+        return jsonify({"error": "No prompt provided"}), 400
+
+    try:
+        response = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=prompt,
+            max_tokens=150,
+            n=1,
+            stop=None,
+            temperature=0.7,
+        )
+
+        return jsonify({"response": response.choices[0].text.strip()}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/patient", methods=["POST"])
 def add_patient():

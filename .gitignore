@@ -136,3 +136,4 @@ app/settings.json
 app/.localhost-ssl
 frontend/.localhost-ssl
 .vscode/
+frontend/licenta_history.txt
