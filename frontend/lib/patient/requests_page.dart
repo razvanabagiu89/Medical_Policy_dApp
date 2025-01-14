@@ -23,7 +23,7 @@ class _RequestsPageState extends State<RequestsPage> {
     final userModel = context.read<UserProvider>();
     final id = userModel.getUserID();
     final response = await http.get(
-      Uri.parse('https://localhost:8000/api/patient/$id/requests'),
+      Uri.parse('http://localhost:8000/api/patient/$id/requests'),
       headers: <String, String>{
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ${userModel.getToken()}',
@@ -43,7 +43,7 @@ class _RequestsPageState extends State<RequestsPage> {
     final userModel = context.read<UserProvider>();
     final patientId = userModel.getUserID();
     return http.delete(
-      Uri.parse('https://localhost:8000/api/patient/$patientId/delete_request'),
+      Uri.parse('http://localhost:8000/api/patient/$patientId/delete_request'),
       headers: <String, String>{
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ${userModel.getToken()}',

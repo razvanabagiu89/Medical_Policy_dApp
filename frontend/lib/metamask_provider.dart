@@ -3,7 +3,7 @@ import 'package:flutter_web3/flutter_web3.dart';
 import 'utils.dart';
 
 class MetaMaskProvider extends ChangeNotifier {
-  static const operatingChain = goerliChainId; // or ganacheChainId;
+  static const operatingChain = ganacheChainId; // or goerliChainId;
   String currentAddress = "";
   int currentChain = -1;
   bool get isEnabled => ethereum != null;

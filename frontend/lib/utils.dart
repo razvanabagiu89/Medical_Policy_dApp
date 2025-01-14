@@ -117,7 +117,7 @@ Uint8List hexStringToUint8List(String hexString) {
 }
 
 Future<List<String>> fetchEmployeeMedicalHashes(userModel, employee_id) async {
-  final url = 'https://localhost:8000/api/employee/$employee_id/show_documents';
+  final url = 'http://localhost:8000/api/employee/$employee_id/show_documents';
   final response = await http.get(
     Uri.parse(url),
     headers: <String, String>{
@@ -189,7 +189,7 @@ Future<void> changePassword(
   final username = userModel.getUsername();
   final type = userModel.getUserType();
   ////////////////////////// backend //////////////////////////
-  final url = 'https://localhost:8000/api/change_password';
+  final url = 'http://localhost:8000/api/change_password';
   final response = await http.post(
     Uri.parse(url),
     headers: <String, String>{

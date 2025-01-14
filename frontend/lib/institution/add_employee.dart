@@ -29,7 +29,7 @@ class AddEmployeeState extends State<AddEmployee> {
     final userModel = context.read<UserProvider>();
     final id = userModel.getUserID();
     ////////////////////////// backend //////////////////////////
-    final url = 'https://localhost:8000/api/$id/employee/add';
+    final url = 'http://localhost:8000/api/$id/employee/add';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{

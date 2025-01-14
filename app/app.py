@@ -11,6 +11,8 @@ from io import BytesIO
 import boto3
 import hashlib
 from datetime import timedelta
+from groq import Groq
+import uuid
 
 app = Flask(__name__)
 CORS(app)
@@ -45,29 +47,74 @@ institution_registry_contract = get_contract(
     web3, "InstitutionRegistryContract", institution_registry_contract_address
 )
 
-openai.api_key = os.environ.get("OPENAI_API_KEY")  # TODO
+ai_client = Groq(
+    api_key=os.environ.get("GROQ_API_KEY"),
+)
 
-@app.route("/api/chat", methods=["POST"])
-def chat_with_gpt():
-    data = request.get_json()
-    prompt = data.get("prompt", "")
-    if not prompt:
-        return jsonify({"error": "No prompt provided"}), 400
+# Chat history stored in memory (can replace with a database later)
+user_sessions = {}
+# Mock data for expenses
+expenses = []
 
+@app.route('/api/expenses', methods=['GET'])
+def get_expenses():
+    total = sum(expense['cost'] for expense in expenses)
+    return jsonify({'expenses': expenses, 'total': total})
+
+@app.route('/api/expenses', methods=['POST'])
+def add_expense():
+    data = request.json
+    new_expense = {
+        'type': data['type'],  # "Request" or "Import"
+        'description': data['description'],
+        'cost': data['cost']
+    }
+    expenses.append(new_expense)
+    return jsonify({'message': 'Expense added successfully'}), 201
+
+@app.route("/api/patient/<int:patient_id>/ai-assistant", methods=["POST"])
+@jwt_required()
+def ai_assistant(patient_id):
     try:
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=prompt,
-            max_tokens=150,
-            n=1,
-            stop=None,
-            temperature=0.7,
+        data = request.json
+        user_message = data.get('message', '')
+
+        if not user_message:
+            return jsonify({'error': 'Message is required'}), 400
+
+        print(f"User {patient_id} message: {user_message}")
+
+        # Initialize chat history for the user if not already present
+        if patient_id not in user_sessions:
+            user_sessions[patient_id] = [
+                {
+                    "role": "system",
+                    "content": "You are an assistant that helps patients 24/7. Introduce yourself as Meddico AI.",
+                }
+            ]
+
+        # Append user message to chat history
+        user_sessions[patient_id].append({"role": "user", "content": user_message})
+        print(f"Chat history for {patient_id}: {user_sessions[patient_id]}")
+
+        chat_completion = ai_client.chat.completions.create(
+            messages=user_sessions[patient_id],
+            model="llama-3.3-70b-versatile",
         )
 
-        return jsonify({"response": response.choices[0].text.strip()}), 200
+        ai_message = chat_completion.choices[0].message.content
+        print(f"AI response: {ai_message}")
+
+        # Append AI response to chat history
+        user_sessions[patient_id].append({"role": "assistant", "content": ai_message})
+
+        return jsonify({'response': ai_message}), 200
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error: {str(e)}")
+        return jsonify({'error': 'Failed to process the request'}), 500
+
+
 
 @app.route("/api/patient", methods=["POST"])
 def add_patient():
@@ -677,7 +724,7 @@ def get_pdf(file_name):
     bucket_name = s3_bucket_name
 
     response = s3.get_object(Bucket=bucket_name, Key=file_name)
-    file_data = response["Body"].read()
+    file_data = response.Body.read()
 
     file_base64 = base64.b64encode(file_data).decode("utf-8")
 

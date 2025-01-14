@@ -22,13 +22,14 @@ pip install requirements.txt
 Activate your Python environment using the provided script.
 
 ```bash
+python -m venv .vennv
 source "myenv/bin/activate"
 ```
 
 ### Step 1: Start Local Blockchain
 
 You can start the local blockchain using Ganache with the following command:
-
+Open another terminal with WSL:
 ```bash
 ganache --db ./my_chain -p 8545 -d
 ```
@@ -36,7 +37,7 @@ ganache --db ./my_chain -p 8545 -d
 ### Step 2: Start MongoDB Docker Container
 
 Before starting MongoDB, ensure that Docker service is running. Start Docker service and MongoDB with the following commands:
-
+Open another WSL terminal:
 ```bash
 sudo service docker start
 docker start test-mongo
@@ -69,6 +70,8 @@ export PYTHONPATH="$PWD"
 Run the backend server using Gunicorn. Ensure you have the required SSL certificate and key.
 
 ```bash
+flask run --host=0.0.0.0 --port=8000
+
 gunicorn --certfile=.localhost-ssl/localhost.crt --keyfile=.localhost-ssl/localhost.key -w 2 --timeout 0 app:app
 ```
 
@@ -77,6 +80,11 @@ gunicorn --certfile=.localhost-ssl/localhost.crt --keyfile=.localhost-ssl/localh
 Build the Flutter web application and start a local HTTPS server to serve the static files.
 
 ```bash
+flutter pub get
+flutter run -d web-server --web-port 33339
+
+
+
 cd ../frontend
 flutter build web
 cd build/web

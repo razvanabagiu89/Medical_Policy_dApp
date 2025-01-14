@@ -137,3 +137,5 @@ app/.localhost-ssl
 frontend/.localhost-ssl
 .vscode/
 frontend/licenta_history.txt
+my_chain/
+.vennv/

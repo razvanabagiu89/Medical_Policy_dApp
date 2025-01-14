@@ -30,7 +30,7 @@ admin_private_key = os.getenv("ADMIN_PRIVATE_KEY")
 s3_access_key = os.environ.get("ACCESS_KEY")
 s3_secret_key = os.environ.get("SECRET_ACCESS_KEY")
 s3_bucket_name = "bucket-test-rzw"
-s3_region = "eu-west-2"
+s3_region = "eu-west-1"
 
 app_config = load_yaml_file("app_config.yaml")
 

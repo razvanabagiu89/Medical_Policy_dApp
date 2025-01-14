@@ -25,7 +25,9 @@ class _AddMedicalRecordState extends State<AddMedicalRecord> {
     final patientId = userModel.getUserID();
 
     ////////////////////////// blockchain //////////////////////////
+    print('Adding medical record to blockchain...');
     final signer = provider!.getSigner();
+    print('Got signer!');
     final contract = await getPatientRegistryContract(signer);
     String medicalRecordHash = computeHash(fileName);
     List<int> medicalRecordBytes32 = convertStringToBytes(medicalRecordHash);
@@ -43,7 +45,7 @@ class _AddMedicalRecordState extends State<AddMedicalRecord> {
     });
 
     final response = await http.post(
-      Uri.parse('https://localhost:8000/api/patient/$patientId/medical_record'),
+      Uri.parse('http://localhost:8000/api/patient/$patientId/medical_record'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ${userModel.getToken()}',

@@ -5,8 +5,8 @@ mongodb:
   entities_collection: entities
   host: mongodb://localhost:27017/
 web3:
-  access_policy_contract_address: '0x8c5044Ce7fD70b827Ff7bEfdAAD8fCA357761E55'
-  chain_id: 5
-  host: https://goerli.infura.io/v3/3eeae409a6804076b6a67c5aeebd6c61
-  institution_registry_contract_address: '0xaF17587dD0684909Cd0091B8Ff886E2FfAC7CE38'
-  patient_registry_contract_address: '0xAc36ccfb3B5641383b2072c29bbD6C349Af5DFC3'
+  access_policy_contract_address: '0x5b1869D9A4C187F2EAa108f3062412ecf0526b24'
+  chain_id: 1337
+  host: http://127.0.0.1:8545
+  institution_registry_contract_address: '0xCfEB869F69431e42cdB54A4F4f105C19C080A601'
+  patient_registry_contract_address: '0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab'

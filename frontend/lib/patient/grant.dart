@@ -30,7 +30,7 @@ class _GrantAccessState extends State<GrantAccess> {
     final userModel = context.read<UserProvider>();
     final patientId = userModel.getUserID();
     final url = Uri.parse(
-        'https://localhost:8000/api/patient/$patientId/all_medical_records');
+        'http://localhost:8000/api/patient/$patientId/all_medical_records');
     final response = await http.get(
       url,
       headers: <String, String>{
@@ -70,7 +70,7 @@ class _GrantAccessState extends State<GrantAccess> {
       await tx.wait();
     }
     ////////////////////////// backend //////////////////////////
-    final url = 'https://localhost:8000/api/patient/$patientId/grant_access';
+    final url = 'http://localhost:8000/api/patient/$patientId/grant_access';
     if (fileHash != null) {
       final response = await http.post(
         Uri.parse(url),

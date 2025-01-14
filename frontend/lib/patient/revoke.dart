@@ -30,7 +30,7 @@ class _RevokeAccessState extends State<RevokeAccess> {
     final userModel = context.read<UserProvider>();
     final patientId = userModel.getUserID();
     final url = Uri.parse(
-        'https://localhost:8000/api/patient/$patientId/all_medical_records');
+        'http://localhost:8000/api/patient/$patientId/all_medical_records');
     final response = await http.get(
       url,
       headers: <String, String>{
@@ -71,7 +71,7 @@ class _RevokeAccessState extends State<RevokeAccess> {
         'getPatientPolicyAllowedByMedicalRecordHash',
         [patientAddress, hexStringToUint8List(fileHash!)]);
     ////////////////////////// backend //////////////////////////
-    final url = 'https://localhost:8000/api/patient/$patientId/revoke';
+    final url = 'http://localhost:8000/api/patient/$patientId/revoke';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{

@@ -33,7 +33,7 @@ class _RegistrationState extends State<Registration> {
         context.read<MetaMaskProvider>().currentAddress;
 
     final response = await http.post(
-      Uri.parse('https://localhost:8000/api/patient'),
+      Uri.parse('http://localhost:8000/api/patient'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'username': username,

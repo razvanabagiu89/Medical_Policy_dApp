@@ -41,7 +41,7 @@ class _DisplayDocumentState extends State<DisplayDocument> {
 
     final userModel = context.read<UserProvider>();
     final response = await http.get(
-      Uri.parse('https://localhost:8000/api/get_file/${widget.medicalHash}'),
+      Uri.parse('http://localhost:8000/api/get_file/${widget.medicalHash}'),
       headers: <String, String>{
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ${userModel.getToken()}',

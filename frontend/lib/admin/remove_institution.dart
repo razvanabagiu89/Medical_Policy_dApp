@@ -21,7 +21,7 @@ class RemoveInstitutionState extends State<RemoveInstitution> {
     final String removeInstitutionUsername =
         removeInstitutionUsernameController.text;
     ////////////////////////// backend //////////////////////////
-    final url = 'https://localhost:8000/api/institution/remove';
+    final url = 'http://localhost:8000/api/institution/remove';
     final response = await http.post(
       Uri.parse(url),
       headers: <String, String>{

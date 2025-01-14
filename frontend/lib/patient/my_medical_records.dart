@@ -24,7 +24,7 @@ class _MyMedicalRecordsState extends State<MyMedicalRecords> {
     final userModel = context.read<UserProvider>();
     final patientId = userModel.getUserID();
     final url = Uri.parse(
-        'https://localhost:8000/api/patient/$patientId/all_medical_records');
+        'http://localhost:8000/api/patient/$patientId/all_medical_records');
     final response = await http.get(
       url,
       headers: <String, String>{
